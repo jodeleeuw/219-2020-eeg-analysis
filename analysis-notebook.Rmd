@@ -1,0 +1,77 @@
+---
+title: "Replication of Boutonnet & Lupyan"
+output: html_notebook
+---
+
+```{r include=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+```
+
+# Behavioral Data
+
+Load in the behavioral data and convert columns to correct types as needed.
+
+```{r message=FALSE, warning=FALSE}
+behavioral.data <- read_csv('data/behavioral/generated/behavioral_data.csv')
+behavioral.data$participant_id <- factor(behavioral.data$participant_id)
+behavioral.data$correct <- as.logical(behavioral.data$correct)
+behavioral.data$rt <- as.numeric(behavioral.data$rt)
+```
+
+## Accuracy
+
+Describe mean accuracy in each condition
+
+```{r}
+accuracy.data <- behavioral.data %>% 
+  filter(phase=="test") %>%
+  group_by(participant_id, match_type, audio_type) %>%
+  summarize(accuracy=mean(correct)) %>%
+  group_by(match_type, audio_type) %>%
+  summarize(M=mean(accuracy), SE = sd(accuracy) / sqrt(n()))
+accuracy.data
+```
+
+## Figure 1
+
+Recreate Figure 1 from Boutonnet & Lupyan.
+
+```{r}
+plot.data <- behavioral.data %>% 
+  filter(phase=="test") %>%
+  filter(correct==TRUE) %>%
+  group_by(participant_id, match_type, audio_type) %>%
+  summarize(mean.rt=mean(as.numeric(rt))) %>%
+  group_by(match_type, audio_type) %>%
+  summarize(M=mean(mean.rt), SE = sd(mean.rt) / sqrt(n()))
+                                                                  
+ggplot(plot.data, aes(x=match_type,y=M,ymin=M-SE, ymax=M+SE,color=audio_type))+
+  geom_pointrange(position=position_dodge(width=0.5), size=0.75)+
+  scale_color_brewer(type="qual",palette="Set1", labels=c("Label","Sound"))+
+  scale_x_discrete(labels=c("Match", "Mismatch"))+
+  labs(x="Congruency",y="Reaction Time (ms)", color="Cue Type")+
+  theme_bw()+
+  theme(panel.grid.major.x=element_blank())
+```
+
+## Mixed effects model for behavioral data
+
+Need data to be every trial
+
+```{r}
+beh.model.data <- behavioral.data %>% 
+  filter(phase=="test") %>%
+  filter(correct==TRUE) %>%
+  select(participant_id, audio_type, match_type, rt) %>%
+  mutate(match_type = factor(match_type), audio_type = factor(audio_type))
+
+# simple.model <- lmer(rt ~ match_type*audio_type + (1 | participant_id), data=beh.model.data)
+# summary(simple.model)
+
+beh.model <- lmer(rt ~ match_type*audio_type + (audio_type | participant_id) + (match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(beh.model)
+```
