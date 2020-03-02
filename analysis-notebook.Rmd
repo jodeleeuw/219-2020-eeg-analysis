@@ -3,12 +3,13 @@ title: "Replication of Boutonnet & Lupyan"
 output: html_notebook
 ---
 
-```{r include=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(readr)
 library(dplyr)
 library(ggplot2)
 library(lme4)
 library(lmerTest)
+library(tidyr)
 ```
 
 # Behavioral Data
@@ -30,9 +31,9 @@ Describe mean accuracy in each condition
 accuracy.data <- behavioral.data %>% 
   filter(phase=="test") %>%
   group_by(participant_id, match_type, audio_type) %>%
-  summarize(accuracy=mean(correct)) %>%
+  summarize(accuracy=mean(correct)*100) %>%
   group_by(match_type, audio_type) %>%
-  summarize(M=mean(accuracy), SE = sd(accuracy) / sqrt(n()))
+  summarize(M=mean(accuracy), SD = sd(accuracy))
 accuracy.data
 ```
 
@@ -74,4 +75,92 @@ beh.model.data <- behavioral.data %>%
 
 beh.model <- lmer(rt ~ match_type*audio_type + (audio_type | participant_id) + (match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer="bobyqa"))
 summary(beh.model)
+```
+
+
+# EEG Data
+
+```{r message=FALSE, warning=FALSE}
+averaged.eeg.data <- read_csv('data/eeg/generated/all_averaged.csv')
+```
+
+## P1
+
+```{r}
+
+ga.eeg.p1 <- averaged.eeg.data %>% 
+  filter(location == "occipital") %>% 
+  group_by(subject, hemisphere, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(hemisphere, audio, t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=audio, fill=audio))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,300))+
+  facet_wrap(~hemisphere)+
+  theme_bw()
+
+```
+
+
+```{r}
+ga.eeg.p2 <- averaged.eeg.data %>% 
+  filter(location=="occipital") %>%
+  group_by(subject, hemisphere, congruence, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(hemisphere, congruence, t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.p2, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=congruence, fill=congruence))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,300))+
+  facet_wrap(~hemisphere)+
+  theme_bw()
+
+```
+
+
+```{r}
+ga.eeg.n4 <- averaged.eeg.data %>% 
+  filter(location == "parietal") %>% 
+  group_by(subject, hemisphere, congruence, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(hemisphere, congruence, audio, t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.n4, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, linetype=audio, color=congruence, fill=congruence))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,600))+
+  theme_bw()
+
+```
+
+```{r}
+n4.diff.data <- averaged.eeg.data %>% 
+  filter(location == "parietal") %>% 
+  group_by(subject, hemisphere, congruence, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = congruence, values_from=voltage) %>%
+  mutate(voltage.diff =`non-match` - match) %>%
+  group_by(hemisphere, audio,  t) %>%
+  summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
+
+ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=audio, fill=audio))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,600))+
+  theme_bw()
 ```
