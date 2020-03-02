@@ -84,7 +84,7 @@ summary(beh.model)
 averaged.eeg.data <- read_csv('data/eeg/generated/all_averaged.csv')
 ```
 
-## P1
+## P1, P2: label vs. sound
 
 ```{r}
 
@@ -106,6 +106,7 @@ ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, co
 
 ```
 
+## P2: match vs. non-match
 
 ```{r}
 ga.eeg.p2 <- averaged.eeg.data %>% 
@@ -126,8 +127,11 @@ ggplot(ga.eeg.p2, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, co
 
 ```
 
+## N400
 
-```{r}
+First plotting grand averages...
+
+```{r echo=TRUE}
 ga.eeg.n4 <- averaged.eeg.data %>% 
   filter(location == "parietal") %>% 
   group_by(subject, hemisphere, congruence, audio, t) %>%
@@ -145,7 +149,9 @@ ggplot(ga.eeg.n4, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, li
 
 ```
 
-```{r}
+Then plotting difference waves for each audio condition ...
+
+```{r echo=TRUE}
 n4.diff.data <- averaged.eeg.data %>% 
   filter(location == "parietal") %>% 
   group_by(subject, hemisphere, congruence, audio, t) %>%
