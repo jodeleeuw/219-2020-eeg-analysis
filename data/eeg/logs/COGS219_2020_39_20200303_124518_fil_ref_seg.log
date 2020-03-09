@@ -1,0 +1,493 @@
+Category	Segment number	Segment Good	Eye Blinks	Eye Movements	Bad Channels
+cosocorr	1	true	false	false	56
+cosocorr	2	true	false	false
+cosocorr	3	false	true	true	17
+cosocorr	4	true	false	false
+cosocorr	5	true	false	false
+cosocorr	6	false	true	false
+cosocorr	7	true	false	false
+cosocorr	8	true	false	false
+cosocorr	9	true	false	false
+cosocorr	10	false	true	true	17
+cosocorr	11	true	false	false
+cosocorr	12	true	false	false
+cosocorr	13	false	true	false
+cosocorr	14	true	false	false
+cosocorr	15	true	false	false
+cosocorr	16	true	false	false
+cosocorr	17	false	true	false	17
+cosocorr	18	true	false	false
+cosocorr	19	false	true	false	17
+cosocorr	20	true	false	false
+cosocorr	21	true	false	false
+cosocorr	22	true	false	false
+cosocorr	23	true	false	false
+cosocorr	24	true	false	false
+cosocorr	25	false	true	true	17, 25
+cosocorr	26	true	false	false
+cosocorr	27	true	false	false
+cosocorr	28	false	true	false
+cosocorr	29	true	false	false
+cosocorr	30	true	false	false
+cosocorr	31	true	false	false
+cosocorr	32	false	false	true
+cosocorr	33	true	false	false
+cosocorr	34	true	false	false
+cosocorr	35	true	false	false	56, 60, 109
+cosocorr	36	true	false	false
+cosocorr	37	true	false	false
+cosocorr	38	true	false	false
+cosocorr	39	true	false	false
+cosocorr	40	true	false	false
+cosocorr	41	false	true	false
+cosocorr	42	true	false	false
+cosocorr	43	true	false	false
+cosocorr	44	true	false	false
+cosocorr	45	true	false	false
+cosocorr	46	true	false	false	56
+cosocorr	47	false	true	false	17
+cosocorr	48	true	false	false
+cosocorr	49	true	false	false
+cosocorr	50	true	false	false
+cosocorr	51	false	true	false
+cosocorr	52	true	false	false
+cosocorr	53	true	false	false
+cosocorr	54	true	false	false
+cosocorr	55	false	true	true	17
+cosocorr	56	true	false	false
+cosocorr	57	true	false	false
+cosocorr	58	false	true	false	17
+cosocorr	59	true	false	false
+cosocorr	60	true	false	false
+cosocorr	61	false	true	false
+cosocorr	62	true	false	false
+cosocorr	63	true	false	false
+cosocorr	64	true	false	false
+cosocorr	65	true	false	false
+cosocorr	66	true	false	false
+cosocorr	67	true	false	false
+cosocorr	68	true	false	false
+cosocorr	69	true	false	false
+cosocorr	70	false	true	true	17
+cosocorr	71	true	false	false
+cosocorr	72	true	false	false
+cosocorr	73	true	false	false
+cosocorr	74	true	false	false
+cosocorr	75	true	false	false
+cosocorr	76	true	false	false
+cosocorr	77	true	false	false
+cosocorr	78	true	false	false
+cosocorr	79	false	true	true
+cosocorr	80	true	false	false
+cosocorr	81	false	true	false
+cosocorr	82	true	false	false
+cosocorr	83	true	false	false	85
+cosocorr	84	true	false	false	85
+cosocorr	85	true	false	false
+cosocorr	86	true	false	false	85
+cosocorr	87	true	false	false	85
+cosocorr	88	true	false	false	80, 85, 119
+cosocorr	89	true	false	false
+cosocorr	90	false	false	true
+cosocorr	91	true	false	false
+cosocorr	92	true	false	false
+cosocorr	93	true	false	false
+cosocorr	94	false	true	false	85
+cosocorr	95	true	false	false	85
+cosocorr	96	true	false	false	85
+cosocorr	97	false	false	true
+cosocorr	98	false	false	true	85
+cosocorr	99	false	true	true	25, 32, 85, 123, 126, 128
+cosocorr	100	false	false	true	27, 85
+cosocorr	101	true	false	false
+cosocorr	102	true	false	false	77, 85
+cosocorr	103	true	false	false	77
+cosocorr	104	false	true	true	17, 25, 85
+cosocorr	105	true	false	false	27, 85
+cosocorr	106	true	false	false
+cosocorr	107	true	false	false
+cosocorr	108	true	false	false	85
+cosocorr	109	true	false	false
+cosocorr	110	true	false	false	85
+cosocorr	111	true	false	false
+cosocorr	112	true	false	false	85
+cosocorr	113	false	false	true	77, 80, 85
+cosocorr	114	true	false	false	85
+cosocorr	115	false	true	false	77, 80, 85
+cosocorr	116	true	false	false
+cosocorr	117	true	false	false	85
+cosocorr	118	true	false	false
+cosocorr	119	true	false	false	77, 80, 85
+cosocorr	120	true	false	false	27, 85
+cosocorr	121	false	false	true	77, 80, 85
+cosocorr	122	true	false	false	77, 80, 85
+cosocorr	123	true	false	false	85
+colacorr	1	true	false	false
+colacorr	2	true	false	false
+colacorr	3	false	false	true
+colacorr	4	true	false	false
+colacorr	5	true	false	false
+colacorr	6	true	false	false
+colacorr	7	true	false	false
+colacorr	8	false	true	false	17
+colacorr	9	false	true	false	17
+colacorr	10	false	false	true
+colacorr	11	true	false	false
+colacorr	12	false	true	false	17
+colacorr	13	true	false	false
+colacorr	14	true	false	false
+colacorr	15	true	false	false
+colacorr	16	true	false	false
+colacorr	17	true	false	false
+colacorr	18	true	false	false
+colacorr	19	false	false	true
+colacorr	20	true	false	false
+colacorr	21	true	false	false
+colacorr	22	false	true	false
+colacorr	23	true	false	false
+colacorr	24	false	true	true
+colacorr	25	true	false	false
+colacorr	26	false	true	false
+colacorr	27	false	true	false
+colacorr	28	true	false	false
+colacorr	29	true	false	false
+colacorr	30	true	false	false
+colacorr	31	true	false	false
+colacorr	32	true	false	false
+colacorr	33	false	true	false	17
+colacorr	34	true	false	false
+colacorr	35	false	true	false
+colacorr	36	true	false	false
+colacorr	37	false	true	false	17
+colacorr	38	true	false	false
+colacorr	39	true	false	false
+colacorr	40	true	false	false
+colacorr	41	true	false	false
+colacorr	42	true	false	false
+colacorr	43	true	false	false
+colacorr	44	true	false	false
+colacorr	45	true	false	false
+colacorr	46	true	false	false
+colacorr	47	true	false	false
+colacorr	48	true	false	false
+colacorr	49	false	true	true	17, 25
+colacorr	50	true	false	false
+colacorr	51	true	false	false
+colacorr	52	true	false	false
+colacorr	53	true	false	false
+colacorr	54	true	false	false
+colacorr	55	true	false	false
+colacorr	56	true	false	false
+colacorr	57	false	true	false
+colacorr	58	true	false	false
+colacorr	59	true	false	false
+colacorr	60	true	false	false
+colacorr	61	true	false	false
+colacorr	62	true	false	false
+colacorr	63	true	false	false
+colacorr	64	true	false	false
+colacorr	65	false	true	false	17
+colacorr	66	true	false	false
+colacorr	67	true	false	false
+colacorr	68	true	false	false
+colacorr	69	true	false	false
+colacorr	70	true	false	false
+colacorr	71	true	false	false
+colacorr	72	true	false	false
+colacorr	73	false	true	false
+colacorr	74	true	false	false
+colacorr	75	true	false	false
+colacorr	76	true	false	false
+colacorr	77	true	false	false
+colacorr	78	true	false	false
+colacorr	79	true	false	false
+colacorr	80	false	true	false	17
+colacorr	81	false	true	true	85
+colacorr	82	false	true	false
+colacorr	83	false	false	true
+colacorr	84	true	false	false
+colacorr	85	true	false	false
+colacorr	86	false	true	false	17, 25
+colacorr	87	false	true	false	85
+colacorr	88	true	false	false	85
+colacorr	89	true	false	false
+colacorr	90	true	false	false	85
+colacorr	91	true	false	false
+colacorr	92	true	false	false
+colacorr	93	true	false	false
+colacorr	94	true	false	false	77
+colacorr	95	false	true	false
+colacorr	96	true	false	false	85
+colacorr	97	false	true	true
+colacorr	98	false	true	true
+colacorr	99	true	false	false	85
+colacorr	100	false	true	false	85
+colacorr	101	true	false	false	85
+colacorr	102	true	false	false	77
+colacorr	103	false	false	true	77, 85
+colacorr	104	true	false	false	85
+colacorr	105	false	true	true	14, 17, 21, 25, 80, 85
+colacorr	106	false	true	false	17, 25, 85
+colacorr	107	true	false	false	80, 85
+colacorr	108	true	false	false	80, 85
+colacorr	109	true	false	false	80, 85
+colacorr	110	true	false	false	80, 85
+colacorr	111	true	false	false	80, 85
+colacorr	112	true	false	false	80, 85
+colacorr	113	true	false	false	80, 85
+colacorr	114	true	false	false	85
+colacorr	115	true	false	false	80, 85
+colacorr	116	true	false	false	27, 85
+colacorr	117	true	false	false	85
+colacorr	118	true	false	false	80, 85
+colacorr	119	true	false	false	85
+colacorr	120	false	false	true	80, 85
+colacorr	121	true	false	false	80, 85
+colacorr	122	true	false	false	80, 85
+inlacorr	1	true	false	false
+inlacorr	2	true	false	false
+inlacorr	3	true	false	false
+inlacorr	4	true	false	false
+inlacorr	5	true	false	false
+inlacorr	6	true	false	false
+inlacorr	7	true	false	false
+inlacorr	8	true	false	false
+inlacorr	9	false	true	true	14, 17, 21, 25
+inlacorr	10	true	false	false
+inlacorr	11	true	false	false
+inlacorr	12	true	false	false
+inlacorr	13	true	false	false
+inlacorr	14	true	false	false
+inlacorr	15	true	false	false
+inlacorr	16	true	false	false
+inlacorr	17	true	false	false
+inlacorr	18	true	false	false
+inlacorr	19	true	false	false
+inlacorr	20	true	false	false
+inlacorr	21	true	false	false
+inlacorr	22	false	true	false	17
+inlacorr	23	false	true	false	17
+inlacorr	24	true	false	false
+inlacorr	25	false	true	false	17, 25
+inlacorr	26	true	false	false
+inlacorr	27	true	false	false
+inlacorr	28	false	true	false
+inlacorr	29	true	false	false
+inlacorr	30	false	true	false
+inlacorr	31	true	false	false
+inlacorr	32	true	false	false
+inlacorr	33	true	false	false
+inlacorr	34	true	false	false
+inlacorr	35	false	true	false	17, 127
+inlacorr	36	true	false	false
+inlacorr	37	true	false	false
+inlacorr	38	true	false	false
+inlacorr	39	false	true	false	8, 17
+inlacorr	40	true	false	false
+inlacorr	41	true	false	false
+inlacorr	42	true	false	false
+inlacorr	43	false	true	false
+inlacorr	44	true	false	false
+inlacorr	45	true	false	false
+inlacorr	46	false	false	true
+inlacorr	47	true	false	false
+inlacorr	48	true	false	false
+inlacorr	49	true	false	false
+inlacorr	50	true	false	false
+inlacorr	51	false	true	false
+inlacorr	52	true	false	false
+inlacorr	53	true	false	false
+inlacorr	54	true	false	false
+inlacorr	55	true	false	false
+inlacorr	56	true	false	false
+inlacorr	57	false	true	false	17, 25
+inlacorr	58	true	false	false
+inlacorr	59	true	false	false
+inlacorr	60	true	false	false
+inlacorr	61	true	false	false
+inlacorr	62	true	false	false
+inlacorr	63	true	false	false
+inlacorr	64	false	false	true
+inlacorr	65	true	false	false
+inlacorr	66	false	true	false
+inlacorr	67	true	false	false
+inlacorr	68	true	false	false
+inlacorr	69	true	false	false
+inlacorr	70	true	false	false
+inlacorr	71	true	false	false
+inlacorr	72	true	false	false
+inlacorr	73	true	false	false
+inlacorr	74	true	false	false
+inlacorr	75	true	false	false
+inlacorr	76	false	false	true
+inlacorr	77	true	false	false
+inlacorr	78	true	false	false
+inlacorr	79	true	false	false
+inlacorr	80	true	false	false
+inlacorr	81	true	false	false
+inlacorr	82	false	false	true
+inlacorr	83	true	false	false
+inlacorr	84	true	false	false	85
+inlacorr	85	true	false	false
+inlacorr	86	true	false	false
+inlacorr	87	false	true	false	8, 14, 17, 25, 85
+inlacorr	88	false	true	false
+inlacorr	89	true	false	false	85
+inlacorr	90	true	false	false	85
+inlacorr	91	true	false	false
+inlacorr	92	true	false	false	85
+inlacorr	93	true	false	false	85
+inlacorr	94	true	false	false
+inlacorr	95	true	false	false	85
+inlacorr	96	true	false	false	85
+inlacorr	97	true	false	false
+inlacorr	98	false	true	true	14, 17, 25, 85
+inlacorr	99	true	false	false
+inlacorr	100	true	false	false	27, 44, 49, 77
+inlacorr	101	true	false	false
+inlacorr	102	true	false	false
+inlacorr	103	true	false	false	80, 85
+inlacorr	104	false	true	false
+inlacorr	105	false	true	false	80, 85
+inlacorr	106	true	false	false	80, 85
+inlacorr	107	true	false	false
+inlacorr	108	true	false	false	85
+inlacorr	109	true	false	false
+inlacorr	110	true	false	false	85
+inlacorr	111	true	false	false	80
+inlacorr	112	true	false	false
+inlacorr	113	true	false	false	80, 85
+inlacorr	114	false	false	true	77, 80, 85
+inlacorr	115	true	false	false	85
+inlacorr	116	false	false	true	85
+inlacorr	117	true	false	false
+inlacorr	118	true	false	false	85
+inlacorr	119	false	false	true	27, 80, 85
+inlacorr	120	true	false	false	80, 85
+inlacorr	121	true	false	false	80, 85
+inlacorr	122	true	false	false	80, 85
+inlacorr	123	false	true	false	17, 85
+insocorr	1	true	false	false
+insocorr	2	true	false	false
+insocorr	3	true	false	false
+insocorr	4	true	false	false
+insocorr	5	true	false	false
+insocorr	6	true	false	false
+insocorr	7	true	false	false
+insocorr	8	false	true	false	17, 127
+insocorr	9	true	false	false
+insocorr	10	true	false	false
+insocorr	11	true	false	false
+insocorr	12	true	false	false
+insocorr	13	true	false	false
+insocorr	14	false	false	true
+insocorr	15	false	true	true	17, 25
+insocorr	16	false	false	true
+insocorr	17	true	false	false
+insocorr	18	false	true	false
+insocorr	19	true	false	false
+insocorr	20	true	false	false
+insocorr	21	true	false	false
+insocorr	22	false	true	true	17
+insocorr	23	true	false	false
+insocorr	24	true	false	false
+insocorr	25	true	false	false
+insocorr	26	true	false	false
+insocorr	27	true	false	false
+insocorr	28	true	false	false
+insocorr	29	true	false	false
+insocorr	30	true	false	false
+insocorr	31	true	false	false
+insocorr	32	true	false	false
+insocorr	33	true	false	false
+insocorr	34	false	true	false
+insocorr	35	false	true	false	17
+insocorr	36	false	true	false
+insocorr	37	true	false	false
+insocorr	38	true	false	false
+insocorr	39	true	false	false
+insocorr	40	true	false	false
+insocorr	41	true	false	false
+insocorr	42	true	false	false
+insocorr	43	true	false	false
+insocorr	44	false	true	false	17
+insocorr	45	true	false	false
+insocorr	46	true	false	false
+insocorr	47	false	true	false	17, 25
+insocorr	48	true	false	false
+insocorr	49	true	false	false
+insocorr	50	true	false	false
+insocorr	51	true	false	false
+insocorr	52	true	false	false
+insocorr	53	false	true	false	17
+insocorr	54	true	false	false
+insocorr	55	false	true	false	17
+insocorr	56	true	false	false
+insocorr	57	true	false	false
+insocorr	58	true	false	false
+insocorr	59	true	false	false
+insocorr	60	false	true	false	17
+insocorr	61	true	false	false
+insocorr	62	true	false	false
+insocorr	63	true	false	false
+insocorr	64	true	false	false
+insocorr	65	true	false	false
+insocorr	66	true	false	false
+insocorr	67	false	true	true	17
+insocorr	68	true	false	false
+insocorr	69	true	false	false
+insocorr	70	true	false	false
+insocorr	71	true	false	false
+insocorr	72	true	false	false
+insocorr	73	true	false	false
+insocorr	74	true	false	false
+insocorr	75	true	false	false	55, 77, 80
+insocorr	76	true	false	false
+insocorr	77	true	false	false
+insocorr	78	true	false	false
+insocorr	79	true	false	false
+insocorr	80	true	false	false
+insocorr	81	true	false	false
+insocorr	82	false	false	true
+insocorr	83	true	false	false
+insocorr	84	true	false	false
+insocorr	85	true	false	false
+insocorr	86	true	false	false
+insocorr	87	true	false	false
+insocorr	88	true	false	false	85
+insocorr	89	true	false	false	85
+insocorr	90	true	false	false	85
+insocorr	91	true	false	false	85
+insocorr	92	true	false	false
+insocorr	93	true	false	false
+insocorr	94	true	false	false	85
+insocorr	95	true	false	false
+insocorr	96	false	false	true
+insocorr	97	false	false	true	85
+insocorr	98	true	false	false	85
+insocorr	99	true	false	false	80, 85
+insocorr	100	true	false	false	80, 85
+insocorr	101	true	false	false	77, 85
+insocorr	102	true	false	false	77
+insocorr	103	true	false	false	77, 85
+insocorr	104	true	false	false	77
+insocorr	105	true	false	false	27
+insocorr	106	true	false	false	85
+insocorr	107	false	false	true	77
+insocorr	108	true	false	false	77
+insocorr	109	true	false	false	85
+insocorr	110	true	false	false	85
+insocorr	111	true	false	false	27, 85
+insocorr	112	true	false	false	85
+insocorr	113	true	false	false	77, 85
+insocorr	114	true	false	false
+insocorr	115	true	false	false	80, 85
+insocorr	116	true	false	false
+insocorr	117	true	false	false
+insocorr	118	true	false	false
+insocorr	119	true	false	false	80, 85
+insocorr	120	true	false	false
+insocorr	121	true	false	false	27
+insocorr	122	true	false	false
+insocorr	123	true	false	false	85
+insocorr	124	false	false	true	80, 85

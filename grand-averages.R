@@ -1,7 +1,8 @@
 library(dplyr)
 library(ggplot2)
 
-subjects <- c("01", "02", "03", "05", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20") #c("01", "02", "03", "05", "07", "08", "09")
+subjects <- c("01", "02", "03", "05", "06", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20",
+              "21", "22", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41") #c("01", "02", "03", "05", "07", "08", "09")
 
 for(s in subjects){
   load(paste0("data/eeg/generated/subject_",s,".Rdata"))
@@ -28,7 +29,7 @@ dfs <- names(x)[(x==TRUE)]
 
 eeg.averaged <- get(dfs[1])
 for(d in dfs[2:length(dfs)]){
-  eeg.averaged <- rbind(eeg.averaged, get(d))
+  eeg.averaged <- bind_rows(eeg.averaged, get(d))
 }
 
 occipital <- c(67,77,65,90,68,94,70,83)

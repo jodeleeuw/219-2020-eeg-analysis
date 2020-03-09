@@ -1,0 +1,497 @@
+Category	Segment number	Segment Good	Eye Blinks	Eye Movements	Bad Channels
+cosocorr	1	true	false	false
+cosocorr	2	true	false	false
+cosocorr	3	true	false	false
+cosocorr	4	true	false	false
+cosocorr	5	false	true	true	8, 25, 114, 126
+cosocorr	6	true	false	false
+cosocorr	7	true	false	false
+cosocorr	8	true	false	false
+cosocorr	9	true	false	false
+cosocorr	10	true	false	false
+cosocorr	11	true	false	false
+cosocorr	12	true	false	false
+cosocorr	13	true	false	false
+cosocorr	14	true	false	false
+cosocorr	15	true	false	false
+cosocorr	16	true	false	false
+cosocorr	17	true	false	false
+cosocorr	18	true	false	false
+cosocorr	19	true	false	false
+cosocorr	20	true	false	false
+cosocorr	21	true	false	false
+cosocorr	22	true	false	false
+cosocorr	23	true	false	false	49
+cosocorr	24	true	false	false
+cosocorr	25	true	false	false
+cosocorr	26	true	false	false
+cosocorr	27	true	false	false
+cosocorr	28	true	false	false
+cosocorr	29	true	false	false	2
+cosocorr	30	true	false	false
+cosocorr	31	true	false	false
+cosocorr	32	false	true	false
+cosocorr	33	true	false	false
+cosocorr	34	true	false	false
+cosocorr	35	true	false	false
+cosocorr	36	true	false	false
+cosocorr	37	true	false	false
+cosocorr	38	true	false	false
+cosocorr	39	false	true	true	126
+cosocorr	40	true	false	false
+cosocorr	41	false	true	false
+cosocorr	42	true	false	false
+cosocorr	43	true	false	false
+cosocorr	44	true	false	false
+cosocorr	45	true	false	false
+cosocorr	46	false	true	false	8, 9, 14, 15, 17, 21, 25, 48, 49, 72, 114, 115, 126, 127
+cosocorr	47	true	false	false
+cosocorr	48	true	false	false
+cosocorr	49	true	false	false
+cosocorr	50	true	false	false
+cosocorr	51	false	true	true	1, 44, 49, 114, 115, 120, 125, 126, 127
+cosocorr	52	true	false	false
+cosocorr	53	true	false	false
+cosocorr	54	true	false	false
+cosocorr	55	true	false	false	88
+cosocorr	56	true	false	false
+cosocorr	57	true	false	false
+cosocorr	58	false	true	false	15, 17
+cosocorr	59	true	false	false
+cosocorr	60	false	true	false	72, 127
+cosocorr	61	true	false	false
+cosocorr	62	true	false	false
+cosocorr	63	true	false	false
+cosocorr	64	true	false	false
+cosocorr	65	true	false	false
+cosocorr	66	false	true	false	92
+cosocorr	67	true	false	false
+cosocorr	68	false	true	true	125, 126, 127
+cosocorr	69	true	false	false
+cosocorr	70	true	false	false
+cosocorr	71	true	false	false	49
+cosocorr	72	true	false	false
+cosocorr	73	true	false	false
+cosocorr	74	true	false	false
+cosocorr	75	true	false	false	81
+cosocorr	76	true	false	false
+cosocorr	77	false	true	true	8, 14, 17, 127
+cosocorr	78	true	false	false
+cosocorr	79	false	true	true	8, 14, 17, 21, 25, 120, 127
+cosocorr	80	true	false	false
+cosocorr	81	true	false	false
+cosocorr	82	true	false	false
+cosocorr	83	false	true	true	126
+cosocorr	84	true	false	false
+cosocorr	85	false	true	true	43, 127, 128
+cosocorr	86	true	false	false
+cosocorr	87	true	false	false
+cosocorr	88	true	false	false
+cosocorr	89	false	true	true	1, 81, 82, 113, 114
+cosocorr	90	false	true	true	17, 48, 49, 60, 67, 72, 85, 114, 120, 126, 127
+cosocorr	91	true	false	false
+cosocorr	92	true	false	false	114
+cosocorr	93	true	false	false
+cosocorr	94	true	false	false	62, 77, 79, 80, 112, 114
+cosocorr	95	true	false	false	114
+cosocorr	96	false	true	true	1, 81, 91, 113, 114, 120, 125, 126, 127
+cosocorr	97	false	true	true	48, 82, 119, 125, 126, 127
+cosocorr	98	false	true	true	74, 79, 80, 81, 82, 112, 114
+cosocorr	99	true	false	false	49, 86, 114, 116
+cosocorr	100	true	false	false
+cosocorr	101	false	true	false	1, 48, 49, 60, 82, 86, 113, 114, 119, 120, 121
+cosocorr	102	false	true	true	1, 2, 8, 14, 17, 20, 21, 25, 38, 43, 44, 48, 49, 60, 61, 67, 70, 72, 74, 75, 80, 81, 82, 84, 86, 88, 91, 93, 95, 98, 99, 102, 107, 112, 113, 114, 119, 120, 122, 125, 126, 127, 128
+cosocorr	103	true	false	false	114
+cosocorr	104	false	true	false	48, 49, 56, 82, 107, 113, 114
+cosocorr	105	false	true	true	114
+cosocorr	106	true	false	false	114
+cosocorr	107	true	false	false	114
+cosocorr	108	false	true	true	80, 88, 114
+cosocorr	109	false	true	false	114, 126
+cosocorr	110	false	true	true	80, 86, 89, 114, 127
+cosocorr	111	true	false	false	114
+cosocorr	112	true	false	false	114
+cosocorr	113	false	false	true	114
+cosocorr	114	false	true	true	49, 114
+cosocorr	115	true	false	false	114
+cosocorr	116	true	false	false
+cosocorr	117	true	false	false
+cosocorr	118	true	false	false	114
+cosocorr	119	true	false	false	114
+cosocorr	120	false	true	true	114, 119, 120
+cosocorr	121	true	false	false	114
+cosocorr	122	false	true	true	68, 73, 80, 81, 88, 94, 100, 114, 126, 127
+cosocorr	123	false	true	false	81, 82, 86, 114, 119
+colacorr	1	true	false	false
+colacorr	2	true	false	false
+colacorr	3	true	false	false
+colacorr	4	true	false	false
+colacorr	5	true	false	false
+colacorr	6	true	false	false
+colacorr	7	true	false	false
+colacorr	8	false	true	false	114
+colacorr	9	true	false	false
+colacorr	10	true	false	false
+colacorr	11	true	false	false
+colacorr	12	true	false	false
+colacorr	13	true	false	false
+colacorr	14	true	false	false
+colacorr	15	true	false	false
+colacorr	16	true	false	false
+colacorr	17	true	false	false
+colacorr	18	true	false	false
+colacorr	19	true	false	false
+colacorr	20	true	false	false
+colacorr	21	true	false	false
+colacorr	22	true	false	false
+colacorr	23	true	false	false
+colacorr	24	true	false	false
+colacorr	25	true	false	false
+colacorr	26	true	false	false
+colacorr	27	true	false	false
+colacorr	28	false	false	true
+colacorr	29	true	false	false
+colacorr	30	true	false	false
+colacorr	31	true	false	false
+colacorr	32	true	false	false
+colacorr	33	true	false	false
+colacorr	34	true	false	false
+colacorr	35	true	false	false
+colacorr	36	true	false	false
+colacorr	37	true	false	false
+colacorr	38	true	false	false	77
+colacorr	39	true	false	false	81
+colacorr	40	true	false	false
+colacorr	41	true	false	false	82, 88, 94, 119
+colacorr	42	true	false	false
+colacorr	43	true	false	false
+colacorr	44	true	false	false
+colacorr	45	true	false	false	88
+colacorr	46	true	false	false
+colacorr	47	true	false	false
+colacorr	48	true	false	false
+colacorr	49	true	false	false
+colacorr	50	false	true	false	85
+colacorr	51	true	false	false
+colacorr	52	true	false	false	77
+colacorr	53	true	false	false
+colacorr	54	true	false	false
+colacorr	55	false	false	true
+colacorr	56	true	false	false
+colacorr	57	true	false	false
+colacorr	58	true	false	false
+colacorr	59	true	false	false
+colacorr	60	true	false	false
+colacorr	61	true	false	false
+colacorr	62	true	false	false
+colacorr	63	true	false	false
+colacorr	64	true	false	false
+colacorr	65	true	false	false
+colacorr	66	true	false	false
+colacorr	67	true	false	false
+colacorr	68	true	false	false
+colacorr	69	true	false	false
+colacorr	70	true	false	false
+colacorr	71	true	false	false
+colacorr	72	true	false	false
+colacorr	73	true	false	false
+colacorr	74	true	false	false
+colacorr	75	true	false	false
+colacorr	76	true	false	false	88
+colacorr	77	true	false	false
+colacorr	78	false	true	true	10, 14, 15, 17, 18, 22, 23, 25, 26, 33, 44, 123
+colacorr	79	false	true	true	1, 8, 14, 49, 74, 80, 102, 114, 125, 126, 127
+colacorr	80	true	false	false
+colacorr	81	true	false	false
+colacorr	82	true	false	false
+colacorr	83	true	false	false
+colacorr	84	true	false	false
+colacorr	85	true	false	false
+colacorr	86	true	false	false
+colacorr	87	false	true	false	14, 17, 81
+colacorr	88	true	false	false
+colacorr	89	true	false	false
+colacorr	90	true	false	false
+colacorr	91	true	false	false	114
+colacorr	92	true	false	false	81, 114
+colacorr	93	false	true	true
+colacorr	94	true	false	false
+colacorr	95	false	false	true
+colacorr	96	false	false	true
+colacorr	97	true	false	false	114
+colacorr	98	false	true	true	48, 81, 82, 114, 120
+colacorr	99	false	false	true	72, 82, 85, 98, 114
+colacorr	100	true	false	false	114
+colacorr	101	false	true	true	17, 114, 119, 120, 126
+colacorr	102	true	false	false	114
+colacorr	103	true	false	false	114
+colacorr	104	true	false	false	114
+colacorr	105	true	false	false	114
+colacorr	106	false	true	false
+colacorr	107	false	true	true	25, 38, 43, 48, 49, 114, 115, 120, 125, 126, 127, 128
+colacorr	108	false	true	true	88, 95, 114
+colacorr	109	false	true	false	114
+colacorr	110	false	true	false	80, 88, 114
+colacorr	111	false	true	true	80, 114
+colacorr	112	true	false	false	114
+colacorr	113	false	false	true	114
+colacorr	114	false	true	true	114, 127
+colacorr	115	false	true	true
+colacorr	116	false	true	true	114, 127
+colacorr	117	true	false	false
+colacorr	118	false	false	true	114, 119
+colacorr	119	true	false	false
+colacorr	120	true	false	false	114
+colacorr	121	true	false	false
+colacorr	122	false	true	true	114
+colacorr	123	false	true	true	1, 8, 17, 21, 49, 60, 91, 114, 119, 120, 122, 126, 128
+colacorr	124	false	true	false	114, 127
+colacorr	125	false	true	true	82, 114
+inlacorr	1	true	false	false
+inlacorr	2	true	false	false
+inlacorr	3	true	false	false
+inlacorr	4	true	false	false
+inlacorr	5	true	false	false	114
+inlacorr	6	true	false	false
+inlacorr	7	true	false	false
+inlacorr	8	true	false	false
+inlacorr	9	false	true	true	8, 14, 17, 25
+inlacorr	10	true	false	false
+inlacorr	11	true	false	false
+inlacorr	12	true	false	false
+inlacorr	13	true	false	false
+inlacorr	14	true	false	false
+inlacorr	15	true	false	false
+inlacorr	16	true	false	false
+inlacorr	17	false	true	false
+inlacorr	18	true	false	false
+inlacorr	19	true	false	false
+inlacorr	20	true	false	false
+inlacorr	21	true	false	false
+inlacorr	22	true	false	false	102
+inlacorr	23	false	true	false
+inlacorr	24	true	false	false
+inlacorr	25	false	false	true	48, 119
+inlacorr	26	true	false	false	2
+inlacorr	27	true	false	false
+inlacorr	28	true	false	false
+inlacorr	29	true	false	false
+inlacorr	30	true	false	false
+inlacorr	31	true	false	false
+inlacorr	32	true	false	false
+inlacorr	33	true	false	false
+inlacorr	34	true	false	false
+inlacorr	35	true	false	false
+inlacorr	36	true	false	false
+inlacorr	37	true	false	false
+inlacorr	38	true	false	false
+inlacorr	39	true	false	false
+inlacorr	40	true	false	false
+inlacorr	41	true	false	false
+inlacorr	42	false	false	true
+inlacorr	43	true	false	false
+inlacorr	44	false	false	true
+inlacorr	45	false	true	true	1, 2, 3, 4, 6, 8, 9, 10, 11, 14, 15, 16, 17, 21, 22, 25, 26, 32, 33, 35, 43, 44, 45, 48, 49, 60, 81, 82, 88, 92, 98, 108, 109, 114, 115, 116, 117, 119, 120, 123, 125, 126, 127, 128
+inlacorr	46	true	false	false
+inlacorr	47	true	false	false
+inlacorr	48	true	false	false
+inlacorr	49	false	false	true
+inlacorr	50	true	false	false
+inlacorr	51	true	false	false
+inlacorr	52	true	false	false
+inlacorr	53	true	false	false
+inlacorr	54	true	false	false
+inlacorr	55	true	false	false
+inlacorr	56	true	false	false
+inlacorr	57	true	false	false
+inlacorr	58	true	false	false
+inlacorr	59	true	false	false
+inlacorr	60	true	false	false
+inlacorr	61	true	false	false
+inlacorr	62	true	false	false
+inlacorr	63	true	false	false
+inlacorr	64	true	false	false
+inlacorr	65	true	false	false
+inlacorr	66	false	true	false	80, 114
+inlacorr	67	true	false	false
+inlacorr	68	true	false	false
+inlacorr	69	true	false	false
+inlacorr	70	true	false	false
+inlacorr	71	true	false	false
+inlacorr	72	true	false	false
+inlacorr	73	true	false	false	81
+inlacorr	74	true	false	false
+inlacorr	75	true	false	false
+inlacorr	76	false	false	true
+inlacorr	77	true	false	false
+inlacorr	78	true	false	false
+inlacorr	79	true	false	false	48, 114
+inlacorr	80	true	false	false
+inlacorr	81	true	false	false
+inlacorr	82	true	false	false
+inlacorr	83	true	false	false
+inlacorr	84	false	true	true	8, 14, 15, 16, 17, 21, 25, 127, 128
+inlacorr	85	true	false	false	120
+inlacorr	86	true	false	false	81
+inlacorr	87	true	false	false
+inlacorr	88	true	false	false	80, 114
+inlacorr	89	true	false	false
+inlacorr	90	true	false	false
+inlacorr	91	true	false	false
+inlacorr	92	true	false	false	114
+inlacorr	93	true	false	false	81, 114
+inlacorr	94	true	false	false
+inlacorr	95	true	false	false	114
+inlacorr	96	true	false	false
+inlacorr	97	true	false	false	114
+inlacorr	98	true	false	false
+inlacorr	99	true	false	false
+inlacorr	100	false	true	true	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 26, 27, 28, 29, 30, 31, 33, 34, 35, 36, 37, 38, 40, 41, 42, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 99, 100, 101, 103, 104, 105, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 125, 126, 127, 128, 129
+inlacorr	101	false	true	true	114, 127
+inlacorr	102	true	false	false	114
+inlacorr	103	true	false	false	114
+inlacorr	104	true	false	false
+inlacorr	105	false	false	true	114
+inlacorr	106	true	false	false
+inlacorr	107	true	false	false	114
+inlacorr	108	true	false	false	62, 77, 78, 79, 80, 82, 91, 112, 114
+inlacorr	109	false	true	true	14, 15, 17, 25, 114
+inlacorr	110	false	false	true	114
+inlacorr	111	false	true	true	8, 14, 15, 17, 21, 25, 38, 48, 114, 126
+inlacorr	112	true	false	false	114
+inlacorr	113	false	true	true	80, 114
+inlacorr	114	true	false	false	114
+inlacorr	115	false	true	false	114, 126
+inlacorr	116	true	false	false	114
+inlacorr	117	true	false	false	114
+inlacorr	118	true	false	false	114
+inlacorr	119	true	false	false	114
+inlacorr	120	false	true	true	1, 8, 14, 15, 17, 21, 44, 48, 49, 59, 60, 68, 81, 82, 86, 92, 94, 102, 103, 112, 114, 119, 120, 121, 122, 125, 126, 127, 128
+inlacorr	121	false	false	true	114, 119
+inlacorr	122	false	true	false	114
+inlacorr	123	false	true	true	82, 92, 114, 126
+inlacorr	124	true	false	false	82, 114
+inlacorr	125	true	false	false	114
+insocorr	1	true	false	false	81
+insocorr	2	true	false	false
+insocorr	3	true	false	false
+insocorr	4	true	false	false
+insocorr	5	false	true	false
+insocorr	6	true	false	false
+insocorr	7	true	false	false
+insocorr	8	true	false	false
+insocorr	9	true	false	false
+insocorr	10	true	false	false
+insocorr	11	true	false	false
+insocorr	12	true	false	false
+insocorr	13	true	false	false
+insocorr	14	true	false	false
+insocorr	15	true	false	false
+insocorr	16	true	false	false
+insocorr	17	true	false	false
+insocorr	18	true	false	false
+insocorr	19	true	false	false
+insocorr	20	true	false	false
+insocorr	21	true	false	false
+insocorr	22	true	false	false
+insocorr	23	true	false	false
+insocorr	24	true	false	false
+insocorr	25	true	false	false
+insocorr	26	true	false	false
+insocorr	27	true	false	false
+insocorr	28	true	false	false
+insocorr	29	true	false	false
+insocorr	30	true	false	false
+insocorr	31	true	false	false
+insocorr	32	true	false	false
+insocorr	33	true	false	false
+insocorr	34	true	false	false
+insocorr	35	true	false	false
+insocorr	36	true	false	false
+insocorr	37	true	false	false
+insocorr	38	true	false	false
+insocorr	39	false	true	false
+insocorr	40	false	false	true	72, 73, 74
+insocorr	41	true	false	false
+insocorr	42	false	true	true	14
+insocorr	43	true	false	false	97
+insocorr	44	true	false	false
+insocorr	45	true	false	false
+insocorr	46	true	false	false
+insocorr	47	true	false	false
+insocorr	48	true	false	false
+insocorr	49	true	false	false
+insocorr	50	true	false	false
+insocorr	51	false	true	true	1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 21, 22, 23, 25, 26, 27, 32, 33, 34, 38, 39, 43, 44, 48, 49, 54, 60, 63, 66, 67, 68, 71, 72, 74, 76, 79, 80, 81, 82, 85, 86, 88, 89, 92, 93, 94, 95, 102, 103, 106, 107, 109, 111, 112, 113, 114, 116, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128
+insocorr	52	false	true	true	14
+insocorr	53	true	false	false
+insocorr	54	true	false	false
+insocorr	55	false	true	true	49, 81, 114
+insocorr	56	false	false	true	114, 120
+insocorr	57	true	false	false
+insocorr	58	true	false	false
+insocorr	59	false	true	false
+insocorr	60	true	false	false
+insocorr	61	true	false	false
+insocorr	62	true	false	false
+insocorr	63	true	false	false
+insocorr	64	true	false	false
+insocorr	65	true	false	false
+insocorr	66	true	false	false
+insocorr	67	true	false	false
+insocorr	68	false	true	true	49, 73, 74, 91, 113, 114, 119, 126
+insocorr	69	true	false	false
+insocorr	70	false	false	true
+insocorr	71	true	false	false
+insocorr	72	true	false	false
+insocorr	73	true	false	false
+insocorr	74	true	false	false
+insocorr	75	true	false	false
+insocorr	76	false	false	true
+insocorr	77	false	true	true	1, 14, 15, 16, 17, 21, 22, 25, 26, 44, 49, 66, 71, 72, 76, 78, 80, 84, 102, 114, 121, 125, 126, 127
+insocorr	78	true	false	false
+insocorr	79	true	false	false
+insocorr	80	true	false	false
+insocorr	81	false	false	true	80, 81, 82, 88, 112, 114, 120
+insocorr	82	false	true	false
+insocorr	83	true	false	false
+insocorr	84	true	false	false
+insocorr	85	true	false	false
+insocorr	86	true	false	false
+insocorr	87	true	false	false
+insocorr	88	false	true	false	1, 72, 81, 114, 120
+insocorr	89	true	false	false	80, 112, 114
+insocorr	90	true	false	false	114
+insocorr	91	true	false	false
+insocorr	92	true	false	false
+insocorr	93	false	true	true	8, 17, 21, 44, 48, 49, 60, 68, 72, 81, 82, 89, 94, 95, 99, 114, 116, 119, 120, 126, 127
+insocorr	94	false	false	true	114
+insocorr	95	true	false	false	114
+insocorr	96	false	false	true	114
+insocorr	97	true	false	false	114
+insocorr	98	true	false	false	114
+insocorr	99	false	true	true
+insocorr	100	true	false	false	114
+insocorr	101	true	false	false
+insocorr	102	false	true	false	114
+insocorr	103	true	false	false	114
+insocorr	104	false	true	false	114
+insocorr	105	true	false	false	114
+insocorr	106	true	false	false	114
+insocorr	107	true	false	false	114
+insocorr	108	false	true	true	95, 114, 119
+insocorr	109	false	true	true	114
+insocorr	110	false	true	true	114
+insocorr	111	false	true	true	114
+insocorr	112	true	false	false	114
+insocorr	113	false	false	true
+insocorr	114	false	true	true	114
+insocorr	115	false	true	true	114
+insocorr	116	true	false	false	114
+insocorr	117	true	false	false	114
+insocorr	118	true	false	false	114
+insocorr	119	true	false	false	114
+insocorr	120	false	true	true	48, 114, 119, 126, 127
+insocorr	121	true	false	false	114
+insocorr	122	false	true	true	114, 119, 120, 127
+insocorr	123	false	true	false	59, 114, 116, 126

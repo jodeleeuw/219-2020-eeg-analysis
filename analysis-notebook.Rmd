@@ -61,7 +61,7 @@ ggplot(plot.data, aes(x=match_type,y=M,ymin=M-SE, ymax=M+SE,color=audio_type))+
 
 ## Mixed effects model for behavioral data
 
-Need data to be every trial
+Predict RTs from the interaction of `match_type` and `audio_type` with random slopes and intercepts for `audio_type` and `match_type` for each participant.
 
 ```{r}
 beh.model.data <- behavioral.data %>% 
@@ -69,9 +69,6 @@ beh.model.data <- behavioral.data %>%
   filter(correct==TRUE) %>%
   select(participant_id, audio_type, match_type, rt) %>%
   mutate(match_type = factor(match_type), audio_type = factor(audio_type))
-
-# simple.model <- lmer(rt ~ match_type*audio_type + (1 | participant_id), data=beh.model.data)
-# summary(simple.model)
 
 beh.model <- lmer(rt ~ match_type*audio_type + (audio_type | participant_id) + (match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer="bobyqa"))
 summary(beh.model)
@@ -82,9 +79,68 @@ summary(beh.model)
 
 ```{r message=FALSE, warning=FALSE}
 averaged.eeg.data <- read_csv('data/eeg/generated/all_averaged.csv')
+single.trial.eeg.data <- read_csv('data/eeg/generated/all_single_trial.csv')
 ```
 
-## P1, P2: label vs. sound
+## P1, P2 Grand Average for Window Extraction
+
+```{r}
+ga.eeg.p1 <- averaged.eeg.data %>% 
+  filter(location == "occipital") %>% 
+  group_by(subject, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_vline(xintercept = c(33,88), color="blue")+
+  geom_vline(xintercept = c(170,210), color="red")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  labs(y="Voltage (uv)")+
+  scale_x_continuous(limits=c(-100,300), breaks=seq(-100,300,20), minor_breaks = seq(-100,300,5))+
+  theme_bw()
+
+```
+
+32-88 ms P1
+30-85 ms P1
+167-207 ms P2
+170-210 ms P2
+
+
+
+## N4 for Window Extraction
+
+```{r echo=TRUE}
+n4.diff.data <- averaged.eeg.data %>% 
+  filter(location == "parietal") %>% 
+  group_by(subject, congruence, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = congruence, values_from=voltage) %>%
+  mutate(voltage.diff =`non-match` - match) %>%
+  filter(!is.na(voltage.diff)) %>%
+  group_by(t) %>%
+  summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
+
+ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_vline(xintercept = c(160,360), color="blue")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  labs(y="Difference Voltage (uV)")+
+  scale_x_continuous(limits=c(-100,600), breaks=seq(-100,600,50), minor_breaks = seq(-100,600,10))+
+  theme_bw()
+```
+
+169-369 ms N400
+160-360 ms N400
+
+## P1, P2: Label vs. Sound
 
 ```{r}
 
@@ -104,6 +160,26 @@ ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, co
   facet_wrap(~hemisphere)+
   theme_bw()
 
+```
+
+Model for P1 and P2 amplitude by audio condition, from pre-reg:
+
+> For the ERP data, we will use linear-mixed effects model to predict mean amplitude from the interaction of cue type, congruence, and laterality (left or right parieto-occipital region of interest where electrodes are placed), with random slopes for cue type, congruence, and laterality, all by participant. This is used to analyze the P1 and P2. 
+
+```{r}
+eeg.p1.model.data <- single.trial.eeg.data %>%
+  filter(component == "P1")
+
+eeg.p1.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere|subject) + (congruence|subject) + (audio|subject), data=eeg.p1.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(eeg.p1.result)
+```
+
+```{r}
+eeg.p2.model.data <- single.trial.eeg.data %>%
+  filter(component == "P2")
+
+eeg.p2.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere|subject) + (congruence|subject) + (audio|subject), data=eeg.p2.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(eeg.p2.result)
 ```
 
 ## P2: match vs. non-match
@@ -159,6 +235,7 @@ n4.diff.data <- averaged.eeg.data %>%
   ungroup() %>%
   pivot_wider(names_from = congruence, values_from=voltage) %>%
   mutate(voltage.diff =`non-match` - match) %>%
+  filter(!is.na(voltage.diff)) %>%
   group_by(hemisphere, audio,  t) %>%
   summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
 
@@ -169,4 +246,14 @@ ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se,
   geom_line()+
   scale_x_continuous(limits=c(-100,600))+
   theme_bw()
+```
+
+Analysis of N4
+
+```{r}
+n4.model.data <- single.trial.eeg.data %>%
+  filter(component == "N4")
+
+eeg.n4.result <- lmer(mean.amplitude ~ audio*congruence  + (congruence|subject) + (audio|subject), data=n4.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(eeg.n4.result)
 ```
