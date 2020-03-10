@@ -10,6 +10,7 @@ library(ggplot2)
 library(lme4)
 library(lmerTest)
 library(tidyr)
+library(optimx)
 ```
 
 # Behavioral Data
@@ -65,12 +66,12 @@ Predict RTs from the interaction of `match_type` and `audio_type` with random sl
 
 ```{r}
 beh.model.data <- behavioral.data %>% 
-  filter(phase=="test") %>%
-  filter(correct==TRUE) %>%
+  filter(phase == "test") %>%
+  filter(correct == TRUE) %>%
   select(participant_id, audio_type, match_type, rt) %>%
   mutate(match_type = factor(match_type), audio_type = factor(audio_type))
 
-beh.model <- lmer(rt ~ match_type*audio_type + (audio_type | participant_id) + (match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer="bobyqa"))
+beh.model <- lmer(rt ~ match_type*audio_type + (audio_type | participant_id) + (match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer="Nelder_Mead"))
 summary(beh.model)
 ```
 
@@ -79,7 +80,7 @@ summary(beh.model)
 
 ```{r message=FALSE, warning=FALSE}
 averaged.eeg.data <- read_csv('data/eeg/generated/all_averaged.csv')
-single.trial.eeg.data <- read_csv('data/eeg/generated/all_single_trial.csv')
+single.trial.eeg.data <- read_csv('data/eeg/generated/single_trial_eeg_behavioral.csv')
 ```
 
 ## P1, P2 Grand Average for Window Extraction
@@ -95,7 +96,7 @@ ga.eeg.p1 <- averaged.eeg.data %>%
 ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
   geom_hline(yintercept = 0, color="black")+
   geom_vline(xintercept = 0, color="black")+
-  geom_vline(xintercept = c(33,88), color="blue")+
+  geom_vline(xintercept = c(35,90), color="blue")+
   geom_vline(xintercept = c(170,210), color="red")+
   geom_ribbon(alpha=0.2, color=NA)+
   geom_line()+
@@ -104,13 +105,6 @@ ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
   theme_bw()
 
 ```
-
-32-88 ms P1
-30-85 ms P1
-167-207 ms P2
-170-210 ms P2
-
-
 
 ## N4 for Window Extraction
 
@@ -129,16 +123,13 @@ n4.diff.data <- averaged.eeg.data %>%
 ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
   geom_hline(yintercept = 0, color="black")+
   geom_vline(xintercept = 0, color="black")+
-  geom_vline(xintercept = c(160,360), color="blue")+
+  geom_vline(xintercept = c(170,370), color="blue")+
   geom_ribbon(alpha=0.2, color=NA)+
   geom_line()+
   labs(y="Difference Voltage (uV)")+
   scale_x_continuous(limits=c(-100,600), breaks=seq(-100,600,50), minor_breaks = seq(-100,600,10))+
   theme_bw()
 ```
-
-169-369 ms N400
-160-360 ms N400
 
 ## P1, P2: Label vs. Sound
 
@@ -168,9 +159,10 @@ Model for P1 and P2 amplitude by audio condition, from pre-reg:
 
 ```{r}
 eeg.p1.model.data <- single.trial.eeg.data %>%
-  filter(component == "P1")
+  filter(component == "P1") %>%
+  select(subject, component, hemisphere, congruence, audio, mean.amplitude)
 
-eeg.p1.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere|subject) + (congruence|subject) + (audio|subject), data=eeg.p1.model.data, control=lmerControl(optimizer="bobyqa"))
+eeg.p1.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere|subject) + (congruence|subject) + (audio|subject), data=eeg.p1.model.data, control=lmerControl(optimizer="optimx", optCtrl = list(method="Nelder-Mead")))
 summary(eeg.p1.result)
 ```
 
@@ -256,4 +248,42 @@ n4.model.data <- single.trial.eeg.data %>%
 
 eeg.n4.result <- lmer(mean.amplitude ~ audio*congruence  + (congruence|subject) + (audio|subject), data=n4.model.data, control=lmerControl(optimizer="bobyqa"))
 summary(eeg.n4.result)
+```
+
+
+# Single trial analysis
+
+> To relate the electrophysiological data to the responses that our subjects
+made, we predicted single-trial RTs from single-trial P1 peak latencies
+and amplitudes using linear mixed-effects models (with cue type and
+congruence as covariates) and random slopes of the main effects of cue
+type and congruence by participant and by item category.
+
+Reproducing Fig. 4
+
+```{r}
+fig.4.data <- single.trial.eeg.data %>%
+  filter(component == "P1", !is.na(peak.time)) %>%
+  group_by(subject, congruence, audio) %>%
+  summarize(mean.peak = mean(peak.time)) %>%
+  group_by(congruence, audio) %>%
+  summarize(M = mean(mean.peak), SE = sd(mean.peak) / sqrt(n()))
+
+ggplot(fig.4.data, aes(x=audio, y=M, ymax=M+SE, ymin=M-SE, color=congruence))+
+  geom_pointrange(position=position_dodge(width=0.3)) +
+  scale_y_continuous(limits=c(50,60))+
+  theme_bw()
+```
+
+
+```{r}
+p1.peak.latency.data <- single.trial.eeg.data %>%
+  filter(component == "P1") %>%
+  filter(!is.na(peak.time))
+
+p1.peak.latency.model <- lmer(rt ~ peak.time + peak.amplitude + audio_type + match_type + (audio_type|subject) + (match_type|subject), data=p1.peak.latency.data, control=lmerControl(optimizer = "bobyqa"))
+
+summary(p1.peak.latency.model)
+
+plot(p1.peak.latency.data$peak.time, p1.peak.latency.data$rt)
 ```
