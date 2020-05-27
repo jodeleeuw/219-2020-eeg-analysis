@@ -3,9 +3,7 @@ library(readr)
 library(pracma)
 
 subjects <- c("01", "02", "03", "05", "06", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20",
-              "21", "22", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41") #c("01", "02", "03", "05", "07", "08", "09")
-
-#subjects <- c("01", "02", "03", "05", "06", "07", "08", "09", "29", "30", "34")
+              "21", "22", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41") 
 
 p1.window <- 35:90
 p2.window <- 170:210
@@ -17,11 +15,13 @@ location.left <- c(68, 65,70, 67)
 location.right <- c(77,90,94,83)
 
 get.peak.p1 <- function(x){
-  peaks <- findpeaks(x, npeaks=1)
+  peaks <- findpeaks(x)
   if(is.null(peaks)){
     return(NA)
   } else {
-    offset <- peaks[1,2] - 1
+    which.peak <- which.max(peaks[,1])
+    peak <- peaks[which.peak,]
+    offset <- peak[2] - 1
     start <- p1.window[1]
     return(start+offset)
   }
@@ -32,18 +32,22 @@ get.peak.p2 <- function(x){
   if(is.null(peaks)){
     return(NA)
   } else {
-    offset <- peaks[1,2] - 1
+    which.peak <- which.max(peaks[,1])
+    peak <- peaks[which.peak,]
+    offset <- peak[2] - 1
     start <- p2.window[1]
     return(start+offset)
   }
 }
 
 get.peak.amplitude <- function(x){
-  peaks <- findpeaks(x, npeaks=1)
+  peaks <- findpeaks(x)
   if(is.null(peaks)){
     return(NA)
   } else {
-    p <- peaks[1,2] 
+    which.peak <- which.max(peaks[,1])
+    peak <- peaks[which.peak,]
+    p <- peak[2]
     return(x[p])
   }
 }

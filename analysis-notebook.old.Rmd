@@ -1,0 +1,296 @@
+---
+title: "Replication of Boutonnet & Lupyan"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(tidyr)
+```
+
+# Behavioral Data
+
+Load in the behavioral data and convert columns to correct types as needed.
+
+```{r message=FALSE, warning=FALSE}
+behavioral.data <- read_csv('data/behavioral/generated/behavioral_data.csv') %>%
+  mutate(participant_id = factor(participant_id), correct = as.logical(correct), rt = as.numeric(rt))
+```
+
+## Accuracy
+
+Describe mean accuracy in each condition
+
+```{r}
+accuracy.data <- behavioral.data %>% 
+  filter(phase=="test") %>%
+  group_by(participant_id, match_type, audio_type) %>%
+  summarize(accuracy=mean(correct)*100) %>%
+  group_by(match_type, audio_type) %>%
+  summarize(M=mean(accuracy), SD = sd(accuracy))
+accuracy.data
+```
+
+## Figure 1
+
+Recreate Figure 1 from Boutonnet & Lupyan.
+
+```{r}
+plot.data <- behavioral.data %>% 
+  filter(phase=="test") %>%
+  filter(correct==TRUE) %>%
+  group_by(participant_id, match_type, audio_type) %>%
+  summarize(mean.rt=mean(as.numeric(rt))) %>%
+  group_by(match_type, audio_type) %>%
+  summarize(M=mean(mean.rt), SE = sd(mean.rt) / sqrt(n()))
+                                                                  
+ggplot(plot.data, aes(x=match_type,y=M,ymin=M-SE, ymax=M+SE, fill=audio_type))+
+  geom_bar(stat="identity", position=position_dodge(width=0.95))+
+  geom_errorbar(position=position_dodge(width=0.95),width=0.2)+
+  scale_fill_brewer(type="qual", palette="Set1", labels=c("Label","Sound")) +
+  scale_x_discrete(labels=c("Match", "Mismatch"))+
+  labs(x="Congruency",y="Reaction Time (ms)", fill="Cue Type")+
+  theme_bw()+
+  theme(panel.grid.major.x=element_blank())
+```
+
+## Mixed effects model for behavioral data
+
+Predict RTs from the interaction of `match_type` and `audio_type` with random slopes and intercepts for `audio_type` and `match_type` for each participant.
+
+```{r}
+beh.model.data <- behavioral.data %>% 
+  filter(phase == "test") %>%
+  filter(correct == TRUE) %>%
+  select(participant_id, audio_type, match_type, rt) %>%
+  mutate(match_type = factor(match_type), audio_type = factor(audio_type))
+
+beh.model <- lmer(rt ~ match_type*audio_type + (audio_type + match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer = "bobyqa"))
+summary(beh.model)
+```
+
+# EEG Data
+
+```{r message=FALSE, warning=FALSE}
+averaged.eeg.data <- read_csv('data/eeg/generated/all_averaged.csv')
+single.trial.eeg.data <- read_csv('data/eeg/generated/single_trial_eeg_behavioral.csv')
+```
+
+## P1, P2 Grand Average for Window Extraction
+
+```{r}
+ga.eeg.p1 <- averaged.eeg.data %>% 
+  filter(location == "occipital") %>% 
+  group_by(subject, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_vline(xintercept = c(35,90), color="blue")+
+  geom_vline(xintercept = c(170,210), color="red")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  labs(y="Voltage (uv)")+
+  scale_x_continuous(limits=c(-100,300), breaks=seq(-100,300,20), minor_breaks = seq(-100,300,5))+
+  theme_bw()
+
+```
+
+## N4 for Window Extraction
+
+```{r echo=TRUE}
+n4.diff.data <- averaged.eeg.data %>% 
+  filter(location == "parietal") %>% 
+  group_by(subject, congruence, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = congruence, values_from=voltage) %>%
+  mutate(voltage.diff =`non-match` - match) %>%
+  filter(!is.na(voltage.diff)) %>%
+  group_by(t) %>%
+  summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
+
+ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_vline(xintercept = c(170,370), color="blue")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  labs(y="Difference Voltage (uV)")+
+  scale_x_continuous(limits=c(-100,600), breaks=seq(-100,600,50), minor_breaks = seq(-100,600,10))+
+  theme_bw()
+```
+
+## P1, P2: Label vs. Sound
+
+```{r}
+
+ga.eeg.p1 <- averaged.eeg.data %>% 
+  filter(location == "occipital") %>% 
+  group_by(subject, hemisphere, audio,  t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(hemisphere, audio, t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=audio, fill=audio))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,300))+
+  facet_grid(congruence~hemisphere)+
+  theme_bw()
+
+```
+
+Model for P1 and P2 amplitude by audio condition, from pre-reg:
+
+> For the ERP data, we will use linear-mixed effects model to predict mean amplitude from the interaction of cue type, congruence, and laterality (left or right parieto-occipital region of interest where electrodes are placed), with random slopes for cue type, congruence, and laterality, all by participant. This is used to analyze the P1 and P2. 
+
+```{r}
+eeg.p1.model.data <- single.trial.eeg.data %>%
+  filter(component == "P1") %>%
+  select(subject, component, hemisphere, congruence, audio, mean.amplitude)
+
+eeg.p1.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + congruence + audio|subject), data=eeg.p1.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(eeg.p1.result)
+```
+
+```{r}
+eeg.p2.model.data <- single.trial.eeg.data %>%
+  filter(component == "P2")
+
+eeg.p2.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + congruence + audio|subject), data=eeg.p2.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(eeg.p2.result)
+```
+
+## P2: match vs. non-match
+
+```{r}
+ga.eeg.p2 <- averaged.eeg.data %>% 
+  filter(location=="occipital") %>%
+  group_by(subject, hemisphere, congruence, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(hemisphere, congruence, t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.p2, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=congruence, fill=congruence))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,300))+
+  facet_wrap(~hemisphere)+
+  theme_bw()
+
+```
+
+## N400
+
+First plotting grand averages...
+
+```{r echo=TRUE}
+ga.eeg.n4 <- averaged.eeg.data %>% 
+  filter(location == "parietal") %>% 
+  group_by(subject, hemisphere, congruence, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  group_by(hemisphere, congruence, audio, t) %>%
+  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+
+ggplot(ga.eeg.n4, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, linetype=audio, color=congruence, fill=congruence))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,600))+
+  theme_bw()
+
+```
+
+Then plotting difference waves for each audio condition ...
+
+```{r echo=TRUE}
+n4.diff.data <- averaged.eeg.data %>% 
+  filter(location == "parietal") %>% 
+  group_by(subject, hemisphere, congruence, audio, t) %>%
+  summarize(voltage = mean(voltage)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = congruence, values_from=voltage) %>%
+  mutate(voltage.diff =`non-match` - match) %>%
+  filter(!is.na(voltage.diff)) %>%
+  group_by(hemisphere, audio,  t) %>%
+  summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
+
+ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=audio, fill=audio))+
+  geom_hline(yintercept = 0, color="black")+
+  geom_vline(xintercept = 0, color="black")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line()+
+  scale_x_continuous(limits=c(-100,600))+
+  theme_bw()
+```
+
+Analysis of N4
+
+```{r}
+n4.model.data <- single.trial.eeg.data %>%
+  filter(component == "N4")
+
+eeg.n4.result <- lmer(mean.amplitude ~ audio*congruence  + (congruence + audio|subject), data=n4.model.data, control=lmerControl(optimizer="bobyqa"))
+summary(eeg.n4.result)
+```
+
+
+# Single trial analysis
+
+> To relate the electrophysiological data to the responses that our subjects
+made, we predicted single-trial RTs from single-trial P1 peak latencies
+and amplitudes using linear mixed-effects models (with cue type and
+congruence as covariates) and random slopes of the main effects of cue
+type and congruence by participant and by item category.
+
+Reproducing Fig. 4
+
+```{r}
+fig.4.data <- single.trial.eeg.data %>%
+  filter(component == "P1", !is.na(peak.time)) %>%
+  group_by(subject, congruence, audio) %>%
+  summarize(mean.peak = mean(peak.time)) %>%
+  group_by(congruence, audio) %>%
+  summarize(M = mean(mean.peak), SE = sd(mean.peak) / sqrt(n()))
+
+ggplot(fig.4.data, aes(x=audio, y=M, ymax=M+SE, ymin=M-SE, color=congruence))+
+  geom_pointrange(position=position_dodge(width=0.3)) +
+  #scale_y_continuous(limits=c(50,60))+
+  theme_bw()
+```
+
+
+```{r}
+p1.peak.latency.data <- single.trial.eeg.data %>%
+  filter(component == "P1") %>%
+  filter(!is.na(peak.time))
+
+p1.peak.latency.model <- lmer(rt ~ peak.time + peak.amplitude + audio_type + match_type + (audio_type  + match_type|subject) + (audio_type + match_type|image_category), data=p1.peak.latency.data, control=lmerControl(optimizer = "bobyqa"))
+
+summary(p1.peak.latency.model)
+```
+
+```{r}
+predict.congruence.data <- single.trial.eeg.data %>%
+  filter(component == "P1") %>%
+  filter(!is.na(peak.time)) %>%
+  mutate(is.congruent = congruence == "match") %>%
+  mutate(peak.time.z = scale(peak.time), peak.amplitude.z = scale(peak.amplitude))
+
+predict.congruence.model <- glmer(is.congruent ~ peak.time.z*peak.amplitude.z*audio + (0 + audio|subject), data=predict.congruence.data, family="binomial", control = glmerControl(optimizer = "bobyqa"))
+
+summary(predict.congruence.model)
+```

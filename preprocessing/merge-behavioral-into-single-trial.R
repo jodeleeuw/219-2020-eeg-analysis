@@ -34,13 +34,15 @@ slim.log.data <- all.log.data %>%
   mutate(correct.trial.index=1:n()) %>%
   ungroup() %>%
   mutate(match_type = str_sub(Category, 1, 2), match_type = if_else(match_type == "co", "match", "non-match")) %>%
-  mutate(audio_type = str_sub(Category, 3, 4), audio_type = if_else(audio_type == "so", "sound", "label"))
+  mutate(audio_type = str_sub(Category, 3, 4), audio_type = if_else(audio_type == "so", "sound", "label")) %>%
+  mutate(subject = parse_integer(subject))
 
 slim.correct.beh.data <- slim.behavioral.data %>% 
   filter(correct==T) %>%
   group_by(subject, match_type, audio_type) %>%
   mutate(correct.trial.index=1:n()) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(subject = parse_integer(subject))
 
 slim.all <- slim.log.data %>% left_join(slim.correct.beh.data, by=c("subject", "match_type", "audio_type", "correct.trial.index"))
 
@@ -49,8 +51,7 @@ merged.data <- slim.all %>%
   group_by(subject, match_type, audio_type) %>%
   mutate(trial=1:n()) %>%
   mutate(congruence = match_type, audio = audio_type) %>%
-  ungroup() %>%
-  mutate(subject = parse_integer(subject))
+  ungroup()
 
 single.trial.data.eeg.behavioral <- single.trial.data %>%
   left_join(merged.data, by=c("subject", "congruence", "audio", "trial"))

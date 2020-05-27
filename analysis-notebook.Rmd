@@ -1,5 +1,5 @@
 ---
-title: "Replication of Boutonnet & Lupyan"
+title: "Replication of Boutonnet & Lupyan, 2015"
 output: html_notebook
 ---
 
@@ -10,280 +10,465 @@ library(ggplot2)
 library(lme4)
 library(lmerTest)
 library(tidyr)
-library(optimx)
+library(patchwork)
+```
+
+```{r}
+set.seed(12604)
 ```
 
 # Behavioral Data
 
-Load in the behavioral data and convert columns to correct types as needed.
-
-```{r message=FALSE, warning=FALSE}
-behavioral.data <- read_csv('data/behavioral/generated/behavioral_data.csv')
-behavioral.data$participant_id <- factor(behavioral.data$participant_id)
-behavioral.data$correct <- as.logical(behavioral.data$correct)
-behavioral.data$rt <- as.numeric(behavioral.data$rt)
+```{r message=FALSE}
+behavioral.data <- read_csv('data/behavioral/generated/behavioral_data.csv') %>%
+  mutate(participant_id = factor(participant_id))
 ```
 
 ## Accuracy
 
-Describe mean accuracy in each condition
+Boutonnet & Lupyan found that participants were (1) highly accurate overall (95-97%) and (2) more accurate at label trials than sound trials. We report accuracy by condition here as a comparison.
 
 ```{r}
-accuracy.data <- behavioral.data %>% 
-  filter(phase=="test") %>%
-  group_by(participant_id, match_type, audio_type) %>%
-  summarize(accuracy=mean(correct)*100) %>%
-  group_by(match_type, audio_type) %>%
-  summarize(M=mean(accuracy), SD = sd(accuracy))
+accuracy.data <- behavioral.data %>%
+  filter(phase == "test") %>%
+  group_by(participant_id, audio_type, match_type) %>%
+  summarize(accuracy = mean(correct)*100) %>%
+  group_by(audio_type, match_type) %>%
+  summarize(M=mean(accuracy), SD=sd(accuracy), SE=SD / sqrt(n()))
+
 accuracy.data
 ```
 
-## Figure 1
+Overall accuracy in our sample is quite high, as well. The range is similar to Boutonnet & Lupyan's reported accuracy.
 
-Recreate Figure 1 from Boutonnet & Lupyan.
-
-```{r}
-plot.data <- behavioral.data %>% 
-  filter(phase=="test") %>%
-  filter(correct==TRUE) %>%
-  group_by(participant_id, match_type, audio_type) %>%
-  summarize(mean.rt=mean(as.numeric(rt))) %>%
-  group_by(match_type, audio_type) %>%
-  summarize(M=mean(mean.rt), SE = sd(mean.rt) / sqrt(n()))
-                                                                  
-ggplot(plot.data, aes(x=match_type,y=M,ymin=M-SE, ymax=M+SE,color=audio_type))+
-  geom_pointrange(position=position_dodge(width=0.5), size=0.75)+
-  scale_color_brewer(type="qual",palette="Set1", labels=c("Label","Sound"))+
-  scale_x_discrete(labels=c("Match", "Mismatch"))+
-  labs(x="Congruency",y="Reaction Time (ms)", color="Cue Type")+
-  theme_bw()+
-  theme(panel.grid.major.x=element_blank())
-```
-
-## Mixed effects model for behavioral data
-
-Predict RTs from the interaction of `match_type` and `audio_type` with random slopes and intercepts for `audio_type` and `match_type` for each participant.
+Next we conduct a paired-sample t-test to determine if there is a statistically significant accuracy advantage for label trials over sound trials.
 
 ```{r}
-beh.model.data <- behavioral.data %>% 
+accuracy.data <- behavioral.data %>%
   filter(phase == "test") %>%
-  filter(correct == TRUE) %>%
-  select(participant_id, audio_type, match_type, rt) %>%
-  mutate(match_type = factor(match_type), audio_type = factor(audio_type))
-
-beh.model <- lmer(rt ~ match_type*audio_type + (audio_type | participant_id) + (match_type | participant_id), data=beh.model.data, control=lmerControl(optimizer="Nelder_Mead"))
-summary(beh.model)
+  group_by(participant_id, audio_type) %>%
+  summarize(accuracy = mean(correct)*100)
+t.test(accuracy ~ audio_type, data=accuracy.data, paired=T)
 ```
 
+We also find that participants are slightly more accurate in label trials than sound trials.
+
+## Response Times
+
+We start our analysis of response time data by reproducing Boutonnet & Lupyan's Figure 1.
+
+```{r}
+rt.data <- behavioral.data %>%
+  filter(phase=="test", correct==TRUE) %>%
+  group_by(participant_id, match_type, audio_type) %>%
+  summarize(participant.avg.rt = mean(rt)) %>%
+  group_by(match_type, audio_type) %>%
+  summarize(M=mean(participant.avg.rt), SE=sd(participant.avg.rt)/sqrt(n()))
+```
+
+```{r}
+behavioral.figure <- ggplot(rt.data, aes(x=match_type, y=M, ymin=M-SE, ymax=M+SE, fill=audio_type))+
+  geom_bar(stat="identity", position=position_dodge(width=0.9), orientation="x")+
+  geom_errorbar(position=position_dodge(width=0.9), width=0.1) +
+  labs(x="Congruence", y="Response Time (ms)", fill="Cue Type")+
+  scale_fill_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_x_discrete(labels=c("Match", "Mismatch"))+
+  scale_y_continuous(limits=c(0,800),expand=c(0,0))+
+  theme_bw(base_size = 11)+
+  theme(panel.grid=element_blank())
+
+ggsave("figures/figure1-behavioral.png", behavioral.figure, height = 2.5, width=3.75, units="in", dpi=300)
+
+behavioral.figure
+```
+
+Comparing with the original, the relative pattern of results across conditions is very similar. Our response times seem to be longer, with the fastest condition around 600ms instead of the original's <500ms. This could be a consequence of using different experiment software to record response times.
+
+As in Boutonnet & Lupyan, we use a linear mixed effects model to examine whether cue type and congruence reliably predict response times. The model predicts response times from the main effects of cue type and congruence, plus their interaction. It includes random effects for cue type and congruence by subject.
+
+```{r}
+rt.model.data <- behavioral.data %>%
+  filter(phase=="test", correct==TRUE) %>%
+  select(participant_id, audio_type, match_type, rt) %>%
+  mutate(audio_type = factor(audio_type), match_type = factor(match_type))
+
+rt.model <- lmer(rt ~ audio_type*match_type + (audio_type + match_type|participant_id), data=rt.model.data,
+                 control=lmerControl(optimizer = "bobyqa"))
+
+summary(rt.model)
+```
+
+We find that participants are faster responding when the cue is a label (b=40.6) and faster when the trial is match (b=31.7). We find no significant interaction between cue type and congruence. 
+
+This pattern matches the behavioral findings of Boutonnet & Lupyan, indicating a positive replication.
 
 # EEG Data
 
-```{r message=FALSE, warning=FALSE}
-averaged.eeg.data <- read_csv('data/eeg/generated/all_averaged.csv')
-single.trial.eeg.data <- read_csv('data/eeg/generated/single_trial_eeg_behavioral.csv')
+To make the data size manageable within this notebook, we perform a lot of preprocessing steps on the raw data in other R scripts located in the `preprocessing` folder. The end result of this preprocessing pipeline is a set of two files.
+
+The `all_averaged.csv` file contains subject-level averages (averaging across trials) for all the relevant electrodes in each cell of the design. It preserves temporal information to enable plotting of waveforms.
+
+The `single_trial_eeg_behavior.csv` contains collapsed EEG information (average amplitude, amplitude peak time) and behavioral data (RT) for each trial.
+
+```{r message=FALSE}
+eeg.averaged.data <- read_csv('data/eeg/generated/all_averaged.csv') %>%
+  mutate(electrode = factor(electrode))
+eeg.single.trial.data <- read_csv('data/eeg/generated/single_trial_eeg_behavioral.csv')
 ```
 
-## P1, P2 Grand Average for Window Extraction
+## P1 and P2 waveforms
+
+First we look at the P1 and P2 separately for each cue type and hemisphere.
 
 ```{r}
-ga.eeg.p1 <- averaged.eeg.data %>% 
-  filter(location == "occipital") %>% 
-  group_by(subject, t) %>%
-  summarize(voltage = mean(voltage)) %>%
-  group_by(t) %>%
-  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
-
-ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
-  geom_hline(yintercept = 0, color="black")+
-  geom_vline(xintercept = 0, color="black")+
-  geom_vline(xintercept = c(35,90), color="blue")+
-  geom_vline(xintercept = c(170,210), color="red")+
-  geom_ribbon(alpha=0.2, color=NA)+
-  geom_line()+
-  labs(y="Voltage (uv)")+
-  scale_x_continuous(limits=c(-100,300), breaks=seq(-100,300,20), minor_breaks = seq(-100,300,5))+
-  theme_bw()
-
-```
-
-## N4 for Window Extraction
-
-```{r echo=TRUE}
-n4.diff.data <- averaged.eeg.data %>% 
-  filter(location == "parietal") %>% 
-  group_by(subject, congruence, audio, t) %>%
-  summarize(voltage = mean(voltage)) %>%
-  ungroup() %>%
-  pivot_wider(names_from = congruence, values_from=voltage) %>%
-  mutate(voltage.diff =`non-match` - match) %>%
-  filter(!is.na(voltage.diff)) %>%
-  group_by(t) %>%
-  summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
-
-ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se))+
-  geom_hline(yintercept = 0, color="black")+
-  geom_vline(xintercept = 0, color="black")+
-  geom_vline(xintercept = c(170,370), color="blue")+
-  geom_ribbon(alpha=0.2, color=NA)+
-  geom_line()+
-  labs(y="Difference Voltage (uV)")+
-  scale_x_continuous(limits=c(-100,600), breaks=seq(-100,600,50), minor_breaks = seq(-100,600,10))+
-  theme_bw()
-```
-
-## P1, P2: Label vs. Sound
-
-```{r}
-
-ga.eeg.p1 <- averaged.eeg.data %>% 
-  filter(location == "occipital") %>% 
+p1.p2.audio.data <- eeg.averaged.data %>%
+  filter(location == "occipital") %>%
   group_by(subject, hemisphere, audio, t) %>%
-  summarize(voltage = mean(voltage)) %>%
+  summarize(subject.voltage = mean(voltage)) %>%
   group_by(hemisphere, audio, t) %>%
-  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
+  summarize(M=mean(subject.voltage), SE = sd(subject.voltage)/sqrt(n()))
+```
 
-ggplot(ga.eeg.p1, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=audio, fill=audio))+
-  geom_hline(yintercept = 0, color="black")+
-  geom_vline(xintercept = 0, color="black")+
+```{r}
+panel.a <- ggplot(p1.p2.audio.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=audio, fill=audio))+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_hline(yintercept = 0, color="grey20")+
   geom_ribbon(alpha=0.2, color=NA)+
-  geom_line()+
-  scale_x_continuous(limits=c(-100,300))+
-  facet_wrap(~hemisphere)+
-  theme_bw()
+  geom_line(size=0.75)+
+  facet_grid(hemisphere~., labeller = labeller(hemisphere=c(left="Left Hemisphere", right="Right Hemisphere")))+
+  scale_x_continuous(expand=c(0,0))+
+  scale_y_continuous(breaks=c(-2,0,2,4,6))+
+  labs(title=expression(paste(bold("A.")," P1 & P2 Cue Type Waveforms")), x="Time since target onset (ms)", y="Amplitude (\U003BCV)", fill="Cue Type", color="Cue Type")+
+  scale_color_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_fill_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  theme_bw(base_size = 9) +
+  coord_cartesian(xlim=c(-100,300), ylim=c(-2.5,6.5))+
+  theme(panel.spacing.x = unit(1.5, "lines"), panel.grid = element_blank())
 
+panel.a
 ```
 
-Model for P1 and P2 amplitude by audio condition, from pre-reg:
-
-> For the ERP data, we will use linear-mixed effects model to predict mean amplitude from the interaction of cue type, congruence, and laterality (left or right parieto-occipital region of interest where electrodes are placed), with random slopes for cue type, congruence, and laterality, all by participant. This is used to analyze the P1 and P2. 
+Next we look at the waveforms grouped by congruence and hemisphere.
 
 ```{r}
-eeg.p1.model.data <- single.trial.eeg.data %>%
-  filter(component == "P1") %>%
-  select(subject, component, hemisphere, congruence, audio, mean.amplitude)
-
-eeg.p1.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere|subject) + (congruence|subject) + (audio|subject), data=eeg.p1.model.data, control=lmerControl(optimizer="optimx", optCtrl = list(method="Nelder-Mead")))
-summary(eeg.p1.result)
+p1.p2.congruence.data <- eeg.averaged.data %>%
+  filter(location == "occipital") %>%
+  group_by(subject, hemisphere, congruence, t) %>%
+  summarize(subject.voltage = mean(voltage)) %>%
+  group_by(hemisphere, congruence, t) %>%
+  summarize(M=mean(subject.voltage), SE = sd(subject.voltage)/sqrt(n()))
 ```
 
 ```{r}
-eeg.p2.model.data <- single.trial.eeg.data %>%
+panel.b <- ggplot(p1.p2.congruence.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=congruence, fill=congruence))+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_hline(yintercept = 0, color="grey20")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line(size=0.75)+
+  facet_grid(hemisphere~., labeller = labeller(hemisphere=c(left="Left Hemisphere", right="Right Hemisphere")))+
+  scale_x_continuous(limits=c(-100,300), expand=c(0,0))+
+  labs(title=expression(paste(bold("B.")," P1 & P2 Congruence Waveforms")), x="Time since target onset (ms)", y="Amplitude (\U003BCV)", fill="Congruence", color="Congruence")+
+  scale_color_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch"))+
+  scale_fill_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch"))+
+  theme_bw(base_size = 9) +
+  theme(panel.grid = element_blank())
+
+panel.b
+```
+
+Following Boutonnet & Lupyan, we look for differences in mean amplitude of the P1 based on hemisphere, cue type, and congruence. We use a linear mixed effects model containing the full interaction of these fixed effects, plus random effects for each factor by subject. 
+
+```{r}
+p1.model.data <- eeg.single.trial.data %>%
+  filter(component == "P1")
+
+p1.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p1.model.data, control=lmerControl(optimizer="bobyqa"))
+
+summary(p1.model)
+```
+
+The central result of Boutonnet & Lupyan was a main effect of cue type (`audiosound` in the above table). We find no main effect here. Numerically our result is in the opposite direction, with sound trials having non-significantly higher mean amplitudes in the P1 window.
+
+We do, however, find an interaction between congruence and cue type. Replotting the data to visualize this effect produces these waveforms:
+
+```{r}
+p1.p2.follow.up.interaction.data <- eeg.averaged.data %>%
+  filter(location == "occipital") %>%
+  group_by(subject, congruence, audio, t) %>%
+  summarize(subject.voltage = mean(voltage)) %>%
+  group_by(congruence, audio, t) %>%
+  summarize(M=mean(subject.voltage), SE = sd(subject.voltage)/sqrt(n()))
+```
+
+```{r}
+ggplot(p1.p2.follow.up.interaction.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=audio, fill=audio))+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_hline(yintercept = 0, color="grey20")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line(size=0.75)+
+  facet_grid(.~congruence, labeller = labeller(congruence=c(match="Match", `non-match`="Mismatch")))+
+  scale_x_continuous(expand=c(0,0))+
+  scale_y_continuous(breaks=c(-2,0,2,4,6))+
+  labs(title="Interaction of cue type and congruence on P1", x="Time since target onset (ms)", y="Amplitude (\U003BCV)", fill="Cue Type", color="Cue Type")+
+  scale_color_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_fill_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  theme_bw(base_size = 9) +
+  coord_cartesian(xlim=c(35,90), ylim=c(-2.5,6.5))+
+  theme(panel.spacing.x = unit(1.5, "lines"), panel.grid = element_blank())
+```
+
+We next ran the same linear mixed effects model on the data from the P2 time window.
+
+```{r}
+p2.model.data <- eeg.single.trial.data %>%
   filter(component == "P2")
 
-eeg.p2.result <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere|subject) + (congruence|subject) + (audio|subject), data=eeg.p2.model.data, control=lmerControl(optimizer="bobyqa"))
-summary(eeg.p2.result)
+p2.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p2.model.data, control=lmerControl(optimizer="bobyqa"))
+
+summary(p2.model)
 ```
 
-## P2: match vs. non-match
+Here we find similar results to the P1. There is a marginally significant (*p* = 0.048) main effect of cue type, but it is in the opposite direction as the main effect found by Boutonnet & Lupyan, with sound trials producing slightly larger amplitudes than label trials. We find that mismatch trials have a higher amplitude than match trials, replicating Boutonnet & Lupyan. Like with the P1, we also find an interaction between cue type and congruence. We visualize this below.
 
 ```{r}
-ga.eeg.p2 <- averaged.eeg.data %>% 
-  filter(location=="occipital") %>%
-  group_by(subject, hemisphere, congruence, t) %>%
-  summarize(voltage = mean(voltage)) %>%
-  group_by(hemisphere, congruence, t) %>%
-  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
-
-ggplot(ga.eeg.p2, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=congruence, fill=congruence))+
-  geom_hline(yintercept = 0, color="black")+
-  geom_vline(xintercept = 0, color="black")+
+ggplot(p1.p2.follow.up.interaction.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=audio, fill=audio))+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_hline(yintercept = 0, color="grey20")+
   geom_ribbon(alpha=0.2, color=NA)+
-  geom_line()+
-  scale_x_continuous(limits=c(-100,300))+
-  facet_wrap(~hemisphere)+
-  theme_bw()
-
+  geom_line(size=0.75)+
+  facet_grid(.~congruence, labeller = labeller(congruence=c(match="Match", `non-match`="Mismatch")))+
+  scale_x_continuous(expand=c(0,0))+
+  scale_y_continuous(breaks=c(-2,0,2,4,6))+
+  labs(title="Interaction of cue type and congruence on P2", x="Time since target onset (ms)", y="Amplitude (\U003BCV)", fill="Cue Type", color="Cue Type")+
+  scale_color_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_fill_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  theme_bw(base_size = 9) +
+  coord_cartesian(xlim=c(170,210), ylim=c(-2.5,6.5))+
+  theme(panel.spacing.x = unit(1.5, "lines"), panel.grid = element_blank())
 ```
 
-## N400
+This shows the same pattern as the P1. Label trials have a higher amplitude only in mismatch trials.
 
-First plotting grand averages...
+# N4 Waveforms
 
-```{r echo=TRUE}
-ga.eeg.n4 <- averaged.eeg.data %>% 
-  filter(location == "parietal") %>% 
-  group_by(subject, hemisphere, congruence, audio, t) %>%
-  summarize(voltage = mean(voltage)) %>%
-  group_by(hemisphere, congruence, audio, t) %>%
-  summarize(m.voltage = mean(voltage), se = sd(voltage)/sqrt(n()))
-
-ggplot(ga.eeg.n4, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, linetype=audio, color=congruence, fill=congruence))+
-  geom_hline(yintercept = 0, color="black")+
-  geom_vline(xintercept = 0, color="black")+
-  geom_ribbon(alpha=0.2, color=NA)+
-  geom_line()+
-  scale_x_continuous(limits=c(-100,600))+
-  theme_bw()
-
-```
-
-Then plotting difference waves for each audio condition ...
-
-```{r echo=TRUE}
-n4.diff.data <- averaged.eeg.data %>% 
-  filter(location == "parietal") %>% 
-  group_by(subject, hemisphere, congruence, audio, t) %>%
-  summarize(voltage = mean(voltage)) %>%
-  ungroup() %>%
-  pivot_wider(names_from = congruence, values_from=voltage) %>%
-  mutate(voltage.diff =`non-match` - match) %>%
-  filter(!is.na(voltage.diff)) %>%
-  group_by(hemisphere, audio,  t) %>%
-  summarize(m.voltage = mean(voltage.diff), se = sd(voltage.diff)/sqrt(n()))
-
-ggplot(n4.diff.data, aes(x=t, y=m.voltage, ymin=m.voltage-se, ymax=m.voltage+se, color=audio, fill=audio))+
-  geom_hline(yintercept = 0, color="black")+
-  geom_vline(xintercept = 0, color="black")+
-  geom_ribbon(alpha=0.2, color=NA)+
-  geom_line()+
-  scale_x_continuous(limits=c(-100,600))+
-  theme_bw()
-```
-
-Analysis of N4
+We visualized the N4 waveforms next. We started with the standard averaged waveform.
 
 ```{r}
-n4.model.data <- single.trial.eeg.data %>%
+n4.data <- eeg.averaged.data %>%
+  filter(location=="parietal") %>%
+  group_by(subject, audio, congruence, t) %>%
+  summarize(participant.avg = mean(voltage)) %>%
+  group_by(audio, congruence, t) %>%
+  summarize(M=mean(participant.avg), SE = sd(participant.avg) / sqrt(n()))
+```
+
+```{r}
+panel.c <- ggplot(n4.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=congruence, fill=congruence, linetype=audio))+
+  geom_hline(yintercept = 0, color="grey20")+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_line(size=0.75)+
+  geom_ribbon(alpha=0.2, color=NA) +
+  scale_color_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch"))+
+  scale_fill_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch"))+
+  scale_linetype(labels=c("Label", "Sound"))+
+  scale_x_continuous(expand=c(0,0))+
+  labs(title=expression(paste(bold("C.")," N4 Waveform")), x="Time since stimulus onset (ms)", y="Amplitude (\U003BCV)", linetype="Cue Type", color="Congruence" ,fill="Congruence") + 
+  coord_cartesian(ylim=c(-4,5))+
+  theme_bw(base_size=9)+
+  theme(panel.grid = element_blank())
+
+panel.c
+
+```
+
+Next we calculated the difference wave (`mismatch - match`) and visualized this.
+
+```{r}
+n4.difference.data <- eeg.averaged.data %>%
+  filter(location=="parietal") %>%
+  group_by(subject, audio, congruence, t) %>%
+  summarize(participant.avg.voltage = mean(voltage)) %>%
+  pivot_wider(names_from=congruence, values_from = participant.avg.voltage) %>%
+  mutate(difference.voltage = `non-match` - match) %>%
+  group_by(audio, t) %>%
+  summarize(M=mean(difference.voltage), SE=sd(difference.voltage)/sqrt(n()))
+```
+
+
+```{r}
+panel.d <- ggplot(n4.difference.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=audio, fill=audio))+
+  geom_hline(yintercept = 0, color="grey20")+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_line(size=0.75)+
+  geom_ribbon(alpha=0.2, color=NA)+
+  scale_color_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_fill_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_x_continuous(expand=c(0,0))+
+  labs(title=expression(paste(bold("D.")," Difference Waves, Mismatch - Match")), x="Time since stimulus onset (ms)", y="Amplitude Difference (\U003BCV)", color="Cue Type", fill="Cue Type")+
+  coord_cartesian(ylim=c(-4,5))+
+  theme_bw(base_size = 9)+
+  theme(panel.grid=element_blank())
+
+panel.d
+```
+
+We analyzed the N4 using a similar model as with the P1 & P2, except that the hemisphere term is removed because the electrodes for this analysis are located on the center of the head.
+
+```{r}
+n4.model.data <- eeg.single.trial.data %>%
   filter(component == "N4")
 
-eeg.n4.result <- lmer(mean.amplitude ~ audio*congruence  + (congruence|subject) + (audio|subject), data=n4.model.data, control=lmerControl(optimizer="bobyqa"))
-summary(eeg.n4.result)
+n4.model <- lmer(mean.amplitude ~ audio*congruence + (audio + congruence | subject), data=n4.model.data, control=lmerControl(optimizer="bobyqa"))
+
+summary(n4.model)
 ```
 
+We find that congruence is a strong predictor of mean amplitude, replicating Boutonnet & Lupyan. However, we also find that cue type is a significant predictor, with label trials having a more positive amplitude than sound trials. This differs from Boutonnet & Lupyan, who found no effect of cue type on the N4. Boutonnet & Lupyan mention that this is an important null result, because it is evidence against a *semantic* interpretation of the effect of labels on object recognition. We think that the lack of an interaction between cue and congruence might be the more important null result here, showing that the standard N4 effect of semantic incongruence is not any stronger for labels than sounds (illustrated clearly by the difference waves). It's less clear to us what the overall main effect of cue type might represent cognitively.
 
-# Single trial analysis
+## Merged Figure
 
-> To relate the electrophysiological data to the responses that our subjects
-made, we predicted single-trial RTs from single-trial P1 peak latencies
-and amplitudes using linear mixed-effects models (with cue type and
-congruence as covariates) and random slopes of the main effects of cue
-type and congruence by participant and by item category.
+Here we merge all of the EEG figure panels into a single figure to mimic the display used by Boutonnet & Lupyan and facilitate easier comparison.
 
-Reproducing Fig. 4
+```{r fig.height=6, fig.width=8.5}
+merged.figure <- ((panel.a | panel.b) / (panel.c | panel.d)) 
+ggsave("figures/figure2-waveform-grid.png", merged.figure, height = 6, width=8.5, units="in", dpi=300)
+merged.figure
+```
+
+# Single-trial EEG analysis
+
+Boutonnet & Lupyan report two different analysis that explore relationships between behavioral and EEG data at the single trial level. 
+
+The first examines whether the peak amplitude and peak latency of P1 predicts response time. We handle the extraction of peaks in `preprocessing/single-trial-data-extraction.R`. 
+
+We start this analysis by reproducing Figure 4 from Boutonnet & Lupyan.
 
 ```{r}
-fig.4.data <- single.trial.eeg.data %>%
-  filter(component == "P1", !is.na(peak.time)) %>%
+figure.4.data <- eeg.single.trial.data %>%
+  filter(component=="P1", !is.na(peak.time)) %>%
   group_by(subject, congruence, audio) %>%
-  summarize(mean.peak = mean(peak.time)) %>%
+  summarize(subject.avg.latency = mean(peak.time)) %>%
   group_by(congruence, audio) %>%
-  summarize(M = mean(mean.peak), SE = sd(mean.peak) / sqrt(n()))
-
-ggplot(fig.4.data, aes(x=audio, y=M, ymax=M+SE, ymin=M-SE, color=congruence))+
-  geom_pointrange(position=position_dodge(width=0.3)) +
-  scale_y_continuous(limits=c(50,60))+
-  theme_bw()
+  summarize(M=mean(subject.avg.latency), SE=sd(subject.avg.latency)/sqrt(n()))
 ```
-
 
 ```{r}
-p1.peak.latency.data <- single.trial.eeg.data %>%
-  filter(component == "P1") %>%
-  filter(!is.na(peak.time))
+single.trial.latency.figure <- ggplot(figure.4.data, aes(x=audio, y=M, ymin=M-SE, ymax=M+SE, fill=congruence))+
+  geom_bar(stat="identity", position = position_dodge(width=0.9), orientation = "x")+
+  geom_errorbar(position = position_dodge(width=0.9), width=0.2)+
+  coord_cartesian(ylim=c(55,65)) +
+  scale_fill_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch"))+
+  labs(x="Cue Type", y="P1 Peak Latency (ms)", fill="Congruence")+
+  scale_x_discrete(labels=c("Label", "Sound"))+
+  theme_bw(base_size=11)+
+  theme(panel.grid = element_blank())
 
-p1.peak.latency.model <- lmer(rt ~ peak.time + peak.amplitude + audio_type + match_type + (audio_type|subject) + (match_type|subject), data=p1.peak.latency.data, control=lmerControl(optimizer = "bobyqa"))
+ggsave("figures/figure3-latency-single-trial.png", single.trial.latency.figure, height = 2.5, width=3.75, units="in", dpi=300)
 
-summary(p1.peak.latency.model)
+single.trial.latency.figure
 
-plot(p1.peak.latency.data$peak.time, p1.peak.latency.data$rt)
+
 ```
+Boutonnet & Lupyan found that latency peak latency of the P1 was latest for Label Mismatch trials. We don't observe the same pattern of results, finding no discernible relationship between cue type, congruence, and P1 peak latency.
+
+We next ran the same linear mixed effects model reported by Boutonnet & Lupyan to see if peak latency or peak amplitude is predictive of subject response times. This model has main effects for peak amplitude, peak latency, cue type, and congruence, plus random effects for cue type and congruence by subject and by image category.
+
+```{r}
+p1.single.trial.model.data <- eeg.single.trial.data %>%
+  filter(component=="P1", !is.na(peak.time))
+
+p1.single.trial.model <- lmer(rt ~ peak.time + peak.amplitude + audio + congruence + (audio + congruence | subject) + (audio + congruence | image_category), data=p1.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
+
+summary(p1.single.trial.model)
+```
+
+We find that congruence and cue type are both predictive of response time at the individual trial level. This is unsurprising, as it just confirms our earlier replication of the behavioral result. (These terms are included in the model as covariates more than as factors of interest.) We do not observe any significant relationships beween peak latency or peak amplitude and response time. This fails to replicate Boutonnet & Lupyan's finding that earlier P1 peaks and larger P1 peaks were both predictive of faster RTs.
+
+The second single-trial level model used by Boutonnet & Lupyan was a model to predict the congruence of a trial based on the interaction of peak amplitude, peak latency, and cue type, with random effects of cue type by subject and item category. Here we had some difficulty fitting the model. We normalized and centered peak amplitude and peak latency as predictors, which aided somewhat in convergence. However, we still find that the model gives warnings about a singular fit. We suspect that this is due to the inclusion of cue type as a random effect at the subject level and item level. Because of the experimental design, half of the label cue trials are congruent and half are incongruent, so cue type cannot predict congruence. We tried fitting an alternative model where peak latency and peak amplitude are random effects, as this makes more sense to us given the structure of the experiment. This model still throws warnings about singular fits, but the parameters are reasonable. All of the models we fit gave roughly the same overall qualitative pattern of results.
+
+```{r}
+p1.congruence.model.data <- eeg.single.trial.data %>%
+  filter(component=="P1", !is.na(peak.time)) %>%
+  mutate(is.congruent = (congruence == "match")) %>%
+  mutate(peak.amplitude.z = scale(peak.amplitude), peak.time.z = scale(peak.time))
+
+p1.congruence.model <- glmer(is.congruent ~ peak.amplitude.z*peak.time.z*audio + (0 + peak.time.z + peak.amplitude.z | subject), p1.congruence.model.data, family="binomial", control=glmerControl(optimizer="bobyqa"))
+
+summary(p1.congruence.model)
+```
+
+We find a significant effect of amplitude, with more negative amplitudes predicting congruent trials. This fits with the pattern of data observed at the averaged-by-subject level, where incongruent trials produced larger amplitudes. We also find an interaction between cue type and peak amplitude, which we visualize (at the averaged level) below:
+
+```{r}
+p1.congruence.plot.data <- p1.congruence.model.data %>%
+  group_by(audio, congruence, subject) %>%
+  summarize(subject.avg = mean(peak.amplitude)) %>%
+  group_by(audio, congruence) %>%
+  summarize(M=mean(subject.avg), SE=sd(subject.avg)/sqrt(n()))
+```
+
+```{r}
+single.trial.congruence.figure <- ggplot(p1.congruence.plot.data, aes(x=congruence, y=M, ymin=M-SE, ymax=M+SE, color=audio))+
+  geom_pointrange(position=position_dodge(width=0.5))+
+  labs(y = "P1 Peak Amplitude (\U003BCV)", x= "Congruence", color="Cue Type")+
+  scale_color_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_x_discrete(labels=c("Match", "Mismatch"))+
+  theme_bw(base_size = 11)+
+  theme(panel.grid=element_blank())
+
+ggsave("figures/figure4-congruence-single-trial.png", single.trial.congruence.figure, height = 2.5, width=3.75, units="in", dpi=300)
+
+single.trial.congruence.figure
+```
+This pattern is also consistent with earlier results that showed an interaction between cue and congruence in the amplitude of the P1. 
+
+Boutonnet & Lupyan also report this interaction, but there is some ambiguity about the direction of the effect in their report, so we are unsure if this is a replication or not. We did not observe any of the reported effects related to peak latency predicting congruence.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
