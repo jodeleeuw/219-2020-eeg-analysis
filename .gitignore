@@ -1,4 +1,11 @@
+
+# STUFF SPECIFIC TO THIS PROJECT
+
+# Don't store raw data files because they are too big for GitHub
 /data/eeg/raw-trials/
+
+
+# GENERIC R .gitignore STUFF BELOW
 
 # History files
 .Rhistory
