@@ -7,11 +7,12 @@ osf.project <- osf_retrieve_node("cq8g4")
 data.folder <- osf.project %>% osf_ls_files(type="folder", path="Data & Analysis/data/eeg", pattern="raw-trials")
 
 # raw eeg data
-data.folder.raw.eeg <- osf.project %>% osf_ls_files(type="folder", path="Data & Analysis/data/eeg", pattern="raw-trials")
-raw.data.files <- dir('data/eeg/raw-trials/')
-raw.data.files.path <- paste0('data/eeg/raw-trials/', raw.data.files)
-raw.data.files.path[1]
-osf_upload(data.folder.raw.eeg, raw.data.files.path, verbose=T)
+# can't upload this to OSF anymore now that file size restrictions are in place.
+# data.folder.raw.eeg <- osf.project %>% osf_ls_files(type="folder", path="Data & Analysis/data/eeg", pattern="raw-trials")
+# raw.data.files <- dir('data/eeg/raw-trials/')
+# raw.data.files.path <- paste0('data/eeg/raw-trials/', raw.data.files)
+# raw.data.files.path[1]
+# osf_upload(data.folder.raw.eeg, raw.data.files.path, verbose=T)
 
 
 # generated eeg data

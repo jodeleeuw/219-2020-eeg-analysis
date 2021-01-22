@@ -74,6 +74,9 @@ merged.data <- slim.all %>%
   mutate(congruence = match_type, audio = audio_type) %>%
   ungroup()
 
+# convert subject column in single.trial.data to numeric representation
+single.trial.data$subject <- as.numeric(single.trial.data$subject)
+
 single.trial.data.eeg.behavioral <- single.trial.data %>%
   left_join(merged.data, by=c("subject", "congruence", "audio", "trial"))
 

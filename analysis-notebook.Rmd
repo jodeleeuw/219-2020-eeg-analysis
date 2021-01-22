@@ -120,6 +120,16 @@ eeg.averaged.data <- read_csv('data/eeg/generated/all_averaged.csv') %>%
 eeg.single.trial.data <- read_csv('data/eeg/generated/single_trial_eeg_behavioral.csv')
 ```
 
+#### Segment Counts
+
+Calculate how many good segments per subject
+
+```{r}
+subject.level.segment.count <- eeg.single.trial.data %>% filter(component=="N4") %>% group_by(subject) %>% summarize(n=n())
+
+subject.level.segment.count %>% summarize(M=mean(n),SD=sd(n),Min=min(n), Max=max(n))
+```
+
 ## P1 and P2 waveforms
 
 First we look at the P1 and P2 separately for each cue type and hemisphere.
