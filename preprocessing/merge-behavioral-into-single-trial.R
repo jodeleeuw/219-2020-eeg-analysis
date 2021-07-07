@@ -11,7 +11,7 @@ slim.behavioral.data <- behavioral.data %>%
   filter(phase=="test") %>%
   mutate(rt = as.numeric(rt)) %>%
   mutate(subject=as.character(participant_id)) %>%
-  select(subject, correct, rt, match_type, audio_type, image_category, sound_category) %>%
+  select(subject, correct, rt, match_type, audio_type, image_category, sound_category, stimulus) %>%
   group_by(subject, match_type, audio_type) %>%
   mutate(trial=1:n()) %>%
   ungroup()

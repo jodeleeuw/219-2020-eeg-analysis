@@ -11,6 +11,7 @@ library(lme4)
 library(lmerTest)
 library(tidyr)
 library(patchwork)
+library(brms)
 ```
 
 ```{r}
@@ -106,11 +107,52 @@ We find that participants are faster responding when the cue is a label (b=40.6)
 
 This pattern matches the behavioral findings of Boutonnet & Lupyan, indicating a positive replication.
 
+At the request of the reviewers, we also fit an exploratory model with a maximal random effects structure, including random effects for stimulus. For these models, we use Bayesian estimation. One advantage of this is that the priors on model parameters aid in model convergence.
+
+```{r}
+rt.brms.model.data <- behavioral.data %>%
+  filter(phase=="test", correct==TRUE) %>%
+  select(participant_id, audio_type, match_type, rt, stimulus) %>%
+  mutate(audio_type = factor(audio_type), match_type = factor(match_type), stimulus=factor(stimulus)) %>%
+  filter(as.numeric(participant_id) <= 10)
+
+rt.brms.model.formula <- bf(
+  rt ~ audio_type * match_type + (audio_type * match_type | participant_id) + (audio_type * match_type | stimulus)
+)
+
+get_prior(rt.brms.model.formula,  data = rt.brms.model.data)
+
+rt.brms.model.priors <- c(
+  set_prior("normal(0,10.4)", class="b", coef="audio_typesound"),
+  set_prior("normal(0,30)", class="b", coef="match_typenonMmatch"),
+  set_prior("normal(0,5)", class="b", coef="audio_typesound:match_typenonMmatch")
+)
+
+rt.brms.model <- brm(
+  formula = rt.brms.model.formula,
+  data = rt.brms.model.data,
+  prior = rt.brms.model.priors,
+  warmup = 1000,
+  iter = 1200,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 4,
+  cores = 4
+)
+
+summary(rt.brms.model)
+
+h1 <- hypothesis(rt.brms.model, "audio_typesound = 10.4")
+h1
+
+plot(h1)
+```
+
 # EEG Data
 
-To make the data size manageable within this notebook, we perform a lot of preprocessing steps on the raw data in other R scripts located in the `preprocessing` folder. The end result of this preprocessing pipeline is a set of two files.
+To make the data size manageable within this notebook, we perform a lot of preprocessing steps on the raw data in other R scripts located in the `preprocessing` folder. The end result of this pre-processing pipeline is a set of two files.
 
-The `all_averaged.csv` file contains subject-level averages (averaging across trials) for all the relevant electrodes in each cell of the design. It preserves temporal information to enable plotting of waveforms.
+The `all_averaged.csv` file contains subject-level averages (averaging across trials) for all the relevant electrodes in each cell of the design. It preserves temporal information to enable plotting of wave forms.
 
 The `single_trial_eeg_behavior.csv` contains collapsed EEG information (average amplitude, amplitude peak time) and behavioral data (RT) for each trial.
 
@@ -201,6 +243,17 @@ p1.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + au
 summary(p1.model)
 ```
 
+WITH RANDOM EFFECTS BY STIMULUS
+```{r}
+p1.model.data <- eeg.single.trial.data %>%
+  filter(component == "P1")
+
+p1.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject) + (hemisphere + audio + congruence|stimulus), data=p1.model.data, control=lmerControl(optimizer="bobyqa"))
+
+summary(p1.model)
+```
+
+
 The central result of Boutonnet & Lupyan was a main effect of cue type (`audiosound` in the above table). We find no main effect here. Numerically our result is in the opposite direction, with sound trials having non-significantly higher mean amplitudes in the P1 window.
 
 We do, however, find an interaction between congruence and cue type. Replotting the data to visualize this effect produces these waveforms:
@@ -237,7 +290,7 @@ We next ran the same linear mixed effects model on the data from the P2 time win
 p2.model.data <- eeg.single.trial.data %>%
   filter(component == "P2")
 
-p2.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p2.model.data, control=lmerControl(optimizer="bobyqa"))
+p2.model <- lmer(peak.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p2.model.data, control=lmerControl(optimizer="bobyqa"))
 
 summary(p2.model)
 ```
@@ -373,6 +426,91 @@ merged.figure <- ((panel.a | panel.b) / (panel.c | panel.d))
 ggsave("figures/figure2-waveform-grid.png", merged.figure, height = 6, width=8.5, units="in", dpi=300)
 merged.figure
 ```
+
+# Exploratory analysis of P1/P2/N4 with maximal-random effects and BFs
+
+```{r}
+
+p1.model.data <- eeg.single.trial.data %>%
+  filter(component == "P1")
+
+p1.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere*audio*congruence|subject) + (hemisphere* audio*congruence|stimulus))
+
+p1.brms.model.priors <- c(
+  set_prior("normal(0,0.3)", coef="LABELS HIGHER THAN SOUNDS"),
+  set_prior("normal(0,0.2)", coef="HEMISPHERE X CUE TYPE"),
+  set_prior("normal(0,0.1)", coef="CONGRUENCE"),
+  set_prior("normal(0,0.1)", coef="CONGRUENCE x CUE TYPE"),
+  set_prior("normal(0,0.1)", coef="OTHERS??")
+)
+
+p1.brms.model <- brm(
+  formula = p1.brms.model.formula,
+  data = p1.model.data,
+  prior = p1.brms.model.priors,
+  sample_prior = TRUE,
+  warmup = 400,
+  iter = 100,
+  chains = 4,
+  cores = 4
+)
+
+summary(p1.brms.model)
+
+p2.model.data <- eeg.single.trial.data %>%
+  filter(component == "P2")
+
+p2.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere*audio*congruence|subject) + (hemisphere* audio*congruence|stimulus))
+
+p2.brms.model.priors <- c(
+  set_prior("normal(0,0.31)", coef="LABELS HIGHER THAN SOUNDS"),
+  set_prior("normal(0,0.1)", coef="HEMISPHERE X CUE TYPE"),
+  set_prior("normal(0,0.5)", coef="LARGER AMP FOR INCONGRUENT - CONGRUENCE"),
+  set_prior("normal(0,0.1)", coef="CONGRUENCE x CUE TYPE"),
+  set_prior("normal(0,0.1)", coef="OTHERS??")
+)
+
+p2.brms.model <- brm(
+  formula = p2.brms.model.formula,
+  data = p2.model.data,
+  prior = p2.brms.model.priors,
+  sample_prior = TRUE,
+  warmup = 400,
+  iter = 100,
+  chains = 4,
+  cores = 4
+)
+
+summary(p2.brms.model)
+
+
+n4.model.data <- eeg.single.trial.data %>%
+  filter(component == "P2")
+
+n4.brms.model.formula <- bf(mean.amplitude ~ audio*congruence + (audio*congruence|subject) + (audio*congruence|stimulus))
+
+n4.brms.model.priors <- c(
+  set_prior("normal(0,0.82)", coef="CONGRUENCY"),
+  set_prior("normal(0,0.1)", coef="CUE TYPE"),
+  set_prior("normal(0,0.1)", coef="CONGRUENCE x CUE TYPE"),
+)
+
+n4.brms.model <- brm(
+  formula = n4.brms.model.formula,
+  data = n4.model.data,
+  prior = n4.brms.model.priors,
+  sample_prior = TRUE,
+  warmup = 400,
+  iter = 100,
+  chains = 4,
+  cores = 4
+)
+
+summary(n4.brms.model)
+
+
+```
+
 
 # Single-trial EEG analysis
 
@@ -573,10 +711,19 @@ n4.single.trial.model <- lmer(rt ~ mean.amplitude.z + audio + congruence + (mean
 summary(n4.single.trial.model)
 ```
 
+**BRMS version**
+```{r}
+n4.single.trial.model.brms.formula <- bf(rt ~ mean.amplitude.z + audio + congruence  + (mean.amplitude.z + audio + congruence | subject) + (mean.amplitude.z + audio + congruence | stimulus))
 
+n4.single.trial.model.brms.priors <- c(
+  set_prior("normal(0,100)", coef="mean.amplitude.z"), # plausible change for 1 SD of amplitude on RT
+  set_prior("normal(0,100)", coef="AUDIO"),
+  set_prior("normal(0,100)", coef="CONGRUENCE")
+)
+  
+summary(n4.single.trial.model)
 
-
-
+```
 
 
 
