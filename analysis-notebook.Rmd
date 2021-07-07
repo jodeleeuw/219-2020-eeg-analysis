@@ -113,8 +113,7 @@ At the request of the reviewers, we also fit an exploratory model with a maximal
 rt.brms.model.data <- behavioral.data %>%
   filter(phase=="test", correct==TRUE) %>%
   select(participant_id, audio_type, match_type, rt, stimulus) %>%
-  mutate(audio_type = factor(audio_type), match_type = factor(match_type), stimulus=factor(stimulus)) %>%
-  filter(as.numeric(participant_id) <= 10)
+  mutate(audio_type = factor(audio_type), match_type = factor(match_type), stimulus=factor(stimulus))
 
 rt.brms.model.formula <- bf(
   rt ~ audio_type * match_type + (audio_type * match_type | participant_id) + (audio_type * match_type | stimulus)
@@ -132,12 +131,13 @@ rt.brms.model <- brm(
   formula = rt.brms.model.formula,
   data = rt.brms.model.data,
   prior = rt.brms.model.priors,
-  warmup = 1000,
-  iter = 1200,
+  warmup = 1500,
+  iter = 3000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 4,
-  cores = 4
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/rt_model"
 )
 
 summary(rt.brms.model)
