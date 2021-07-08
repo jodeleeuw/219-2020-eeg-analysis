@@ -436,24 +436,29 @@ p1.model.data <- eeg.single.trial.data %>%
 
 p1.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere*audio*congruence|subject) + (hemisphere* audio*congruence|stimulus))
 
+get_prior(p1.brms.model.formula, data=p1.model.data)
+
 p1.brms.model.priors <- c(
-  set_prior("normal(0,0.3)", coef="LABELS HIGHER THAN SOUNDS"),
-  set_prior("normal(0,0.2)", coef="HEMISPHERE X CUE TYPE"),
-  set_prior("normal(0,0.1)", coef="CONGRUENCE"),
-  set_prior("normal(0,0.1)", coef="CONGRUENCE x CUE TYPE"),
-  set_prior("normal(0,0.1)", coef="OTHERS??")
+  set_prior("normal(0,0.1)", class="b"),
+  set_prior("normal(0,0.3)", coef="audiosound"),
+  set_prior("normal(0,0.2)", coef="hemisphereright:audiosound")
 )
 
 p1.brms.model <- brm(
   formula = p1.brms.model.formula,
   data = p1.model.data,
   prior = p1.brms.model.priors,
+  warmup = 1500,
+  iter = 3000,
+  save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  warmup = 400,
-  iter = 100,
-  chains = 4,
-  cores = 4
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/p1_model"
 )
+
+
+
 
 summary(p1.brms.model)
 
@@ -463,22 +468,22 @@ p2.model.data <- eeg.single.trial.data %>%
 p2.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere*audio*congruence|subject) + (hemisphere* audio*congruence|stimulus))
 
 p2.brms.model.priors <- c(
-  set_prior("normal(0,0.31)", coef="LABELS HIGHER THAN SOUNDS"),
-  set_prior("normal(0,0.1)", coef="HEMISPHERE X CUE TYPE"),
-  set_prior("normal(0,0.5)", coef="LARGER AMP FOR INCONGRUENT - CONGRUENCE"),
-  set_prior("normal(0,0.1)", coef="CONGRUENCE x CUE TYPE"),
-  set_prior("normal(0,0.1)", coef="OTHERS??")
+  set_prior("normal(0,0.1)", class="b"),
+  set_prior("normal(0,0.31)", coef="audiosound"),
+  set_prior("normal(0,0.5)", coef="LARGER AMP FOR INCONGRUENT - CONGRUENCE")
 )
 
 p2.brms.model <- brm(
   formula = p2.brms.model.formula,
   data = p2.model.data,
   prior = p2.brms.model.priors,
+  warmup = 1500,
+  iter = 3000,
+  save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  warmup = 400,
-  iter = 100,
-  chains = 4,
-  cores = 4
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/p2_model"
 )
 
 summary(p2.brms.model)
