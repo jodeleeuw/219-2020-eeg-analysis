@@ -457,9 +457,6 @@ p1.brms.model <- brm(
   file = "data/brms_fits/p1_model"
 )
 
-
-
-
 summary(p1.brms.model)
 
 p2.model.data <- eeg.single.trial.data %>%
@@ -467,10 +464,13 @@ p2.model.data <- eeg.single.trial.data %>%
 
 p2.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere*audio*congruence|subject) + (hemisphere* audio*congruence|stimulus))
 
+get_prior(p2.brms.model.formula, data=p2.model.data)
+
+
 p2.brms.model.priors <- c(
   set_prior("normal(0,0.1)", class="b"),
   set_prior("normal(0,0.31)", coef="audiosound"),
-  set_prior("normal(0,0.5)", coef="LARGER AMP FOR INCONGRUENT - CONGRUENCE")
+  set_prior("normal(0,0.5)", coef="congruencenonMmatch")
 )
 
 p2.brms.model <- brm(
