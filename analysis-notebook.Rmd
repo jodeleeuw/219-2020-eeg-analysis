@@ -490,25 +490,28 @@ summary(p2.brms.model)
 
 
 n4.model.data <- eeg.single.trial.data %>%
-  filter(component == "P2")
+  filter(component == "N4")
 
 n4.brms.model.formula <- bf(mean.amplitude ~ audio*congruence + (audio*congruence|subject) + (audio*congruence|stimulus))
 
+get_prior(n4.brms.model.formula, data=n4.model.data)
+
 n4.brms.model.priors <- c(
-  set_prior("normal(0,0.82)", coef="CONGRUENCY"),
-  set_prior("normal(0,0.1)", coef="CUE TYPE"),
-  set_prior("normal(0,0.1)", coef="CONGRUENCE x CUE TYPE"),
+  set_prior("normal(0,0.1)", class="b"),
+  set_prior("normal(0,0.82)", coef="congruencenonMmatch")
 )
 
 n4.brms.model <- brm(
   formula = n4.brms.model.formula,
   data = n4.model.data,
   prior = n4.brms.model.priors,
+  warmup = 1500,
+  iter = 3000,
+  save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  warmup = 400,
-  iter = 100,
-  chains = 4,
-  cores = 4
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/n4_model"
 )
 
 summary(n4.brms.model)
@@ -718,15 +721,28 @@ summary(n4.single.trial.model)
 
 **BRMS version**
 ```{r}
-n4.single.trial.model.brms.formula <- bf(rt ~ mean.amplitude.z + audio + congruence  + (mean.amplitude.z + audio + congruence | subject) + (mean.amplitude.z + audio + congruence | stimulus))
+n4.single.trial.brms.model.formula <- bf(rt ~ mean.amplitude.z + audio + congruence  + (mean.amplitude.z + audio + congruence | subject) + (mean.amplitude.z + audio + congruence | stimulus))
 
-n4.single.trial.model.brms.priors <- c(
-  set_prior("normal(0,100)", coef="mean.amplitude.z"), # plausible change for 1 SD of amplitude on RT
-  set_prior("normal(0,100)", coef="AUDIO"),
-  set_prior("normal(0,100)", coef="CONGRUENCE")
+get_prior(n4.single.trial.brms.model.formula, data=n4.single.trial.model.data)
+
+n4.single.trial.brms.model.priors <- c(
+  set_prior("normal(0,100)", class="b")
+)
+
+n4.single.trial.brms.model <- brm(
+  formula = n4.single.trial.brms.model.formula,
+  data = n4.single.trial.model.data,
+  prior = n4.single.trial.brms.model.priors,
+  warmup = 1500,
+  iter = 3000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/n4_single_trial_model"
 )
   
-summary(n4.single.trial.model)
+summary(n4.single.trial.brms.model)
 
 ```
 
