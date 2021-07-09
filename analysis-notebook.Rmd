@@ -107,7 +107,7 @@ We find that participants are faster responding when the cue is a label (b=40.6)
 
 This pattern matches the behavioral findings of Boutonnet & Lupyan, indicating a positive replication.
 
-At the request of the reviewers, we also fit an exploratory model with a maximal random effects structure, including random effects for stimulus. For these models, we use Bayesian estimation. One advantage of this is that the priors on model parameters aid in model convergence.
+At the request of the reviewers, we also fit an exploratory model with a maximal random effects structure, including random effects for stimulus. For these models, we use Bayesian estimation. 
 
 ```{r}
 rt.brms.model.data <- behavioral.data %>%
@@ -122,9 +122,9 @@ rt.brms.model.formula <- bf(
 get_prior(rt.brms.model.formula,  data = rt.brms.model.data)
 
 rt.brms.model.priors <- c(
-  set_prior("normal(0,10.4)", class="b", coef="audio_typesound"),
-  set_prior("normal(0,30)", class="b", coef="match_typenonMmatch"),
-  set_prior("normal(0,5)", class="b", coef="audio_typesound:match_typenonMmatch")
+  set_prior("normal(10.4,1.93)", class="b", coef="audio_typesound"),
+  set_prior("normal(30,1.94)", class="b", coef="match_typenonMmatch"),
+  set_prior("normal(0,10.4)", class="b", coef="audio_typesound:match_typenonMmatch")
 )
 
 rt.brms.model <- brm(
@@ -139,13 +139,19 @@ rt.brms.model <- brm(
   cores = 6,
   file = "data/brms_fits/rt_model"
 )
+```
 
+With the brms maximal random effects model we can look at the parameter estimates on the population-level parameters:
+
+```{r}
 summary(rt.brms.model)
+```
 
-h1 <- hypothesis(rt.brms.model, "audio_typesound = 10.4")
-h1
+Has our belief in the alternative hypothesis been strengthened?
 
-plot(h1)
+```{r}
+rt.h1 <- hypothesis(rt.brms.model, "audio_typesound > 0")
+plot(rt.h1)
 ```
 
 # EEG Data
@@ -242,17 +248,6 @@ p1.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + au
 
 summary(p1.model)
 ```
-
-WITH RANDOM EFFECTS BY STIMULUS
-```{r}
-p1.model.data <- eeg.single.trial.data %>%
-  filter(component == "P1")
-
-p1.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject) + (hemisphere + audio + congruence|stimulus), data=p1.model.data, control=lmerControl(optimizer="bobyqa"))
-
-summary(p1.model)
-```
-
 
 The central result of Boutonnet & Lupyan was a main effect of cue type (`audiosound` in the above table). We find no main effect here. Numerically our result is in the opposite direction, with sound trials having non-significantly higher mean amplitudes in the P1 window.
 
@@ -429,6 +424,8 @@ merged.figure
 
 # Exploratory analysis of P1/P2/N4 with maximal-random effects and BFs
 
+Here we try a different analysis strategy at the suggestion of a reviewer. We fit a maximal random-effects structure for each of the ERP component models using Bayesian estimation. We set the priors of the population-level parameters based on the reported effects in B&L. For each effect, we set a prior of a normal distribution centered on 0 with standard deviation equal to the reported effect in the paper. This is a conservative way to estimate the degree to which our data strengthens beliefs in the null hypothesis, because the null has the highest prior probability in our model, and the size of the reported effect in B&L controls how dispersed the prior probability is. Stronger effects have more dispersed prior probability, and so are less concentrated at the null of 0. We then use bayes factors to quantify the degree to which our data shifts beliefs in the null hypothesis.
+
 ```{r}
 
 p1.model.data <- eeg.single.trial.data %>%
@@ -439,9 +436,9 @@ p1.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemi
 get_prior(p1.brms.model.formula, data=p1.model.data)
 
 p1.brms.model.priors <- c(
-  set_prior("normal(0,0.1)", class="b"),
-  set_prior("normal(0,0.3)", coef="audiosound"),
-  set_prior("normal(0,0.2)", coef="hemisphereright:audiosound")
+  set_prior("normal(0, 0.3)", class="b"),
+  set_prior("normal(-0.3, 0.127)", coef="audiosound"),
+  set_prior("normal(-0.2, 0.22)", coef="hemisphereright:audiosound")
 )
 
 p1.brms.model <- brm(
@@ -456,9 +453,21 @@ p1.brms.model <- brm(
   cores = 6,
   file = "data/brms_fits/p1_model"
 )
+```
 
+Summarize the P1 model fits
+```{r}
 summary(p1.brms.model)
+```
+```{r}
+p1.h1 <- hypothesis(p1.brms.model, "audiosound = 0")
 
+plot(p1.h1)
+```
+
+
+
+```{r}
 p2.model.data <- eeg.single.trial.data %>%
   filter(component == "P2")
 
@@ -468,9 +477,9 @@ get_prior(p2.brms.model.formula, data=p2.model.data)
 
 
 p2.brms.model.priors <- c(
-  set_prior("normal(0,0.1)", class="b"),
-  set_prior("normal(0,0.31)", coef="audiosound"),
-  set_prior("normal(0,0.5)", coef="congruencenonMmatch")
+  set_prior("normal(0,0.31)", class="b"),
+  set_prior("normal(-0.31,0.11)", coef="audiosound"),
+  set_prior("normal(0.5,0.11)", coef="congruencenonMmatch")
 )
 
 p2.brms.model <- brm(
@@ -485,10 +494,25 @@ p2.brms.model <- brm(
   cores = 6,
   file = "data/brms_fits/p2_model"
 )
+```
 
+
+```{r}
 summary(p2.brms.model)
+```
 
 
+```{r}
+p2.h1 <- hypothesis(p2.brms.model, "audiosound = 0")
+plot(p2.h1)
+```
+```{r}
+p2.h2 <- hypothesis(p2.brms.model, "congruencenonMmatch = 0")
+plot(p2.h2)
+```
+
+
+```{r}
 n4.model.data <- eeg.single.trial.data %>%
   filter(component == "N4")
 
@@ -497,8 +521,9 @@ n4.brms.model.formula <- bf(mean.amplitude ~ audio*congruence + (audio*congruenc
 get_prior(n4.brms.model.formula, data=n4.model.data)
 
 n4.brms.model.priors <- c(
-  set_prior("normal(0,0.1)", class="b"),
-  set_prior("normal(0,0.82)", coef="congruencenonMmatch")
+  set_prior("normal(0,0.82)", class="b"),
+  set_prior("normal(-0.1,0.09)", coef="audiosound"),
+  set_prior("normal(-0.82,0.13)", coef="congruencenonMmatch")
 )
 
 n4.brms.model <- brm(
@@ -513,10 +538,26 @@ n4.brms.model <- brm(
   cores = 6,
   file = "data/brms_fits/n4_model"
 )
+```
 
+
+```{r}
 summary(n4.brms.model)
+```
 
+```{r}
+n4.h1 <- hypothesis(n4.brms.model, "congruencenonMmatch < 0")
+plot(n4.h1)
+```
 
+```{r}
+n4.h1.2 <- hypothesis(n4.brms.model, "congruencenonMmatch = -0.82")
+n4.h1.2
+```
+```{r}
+n4.h2 <- hypothesis(n4.brms.model, "audiosound = 0")
+plot(n4.h2)
+n4.h2
 ```
 
 
@@ -575,6 +616,38 @@ ggplot(p1.single.trial.model.data, aes(x=peak.amplitude, y=rt, group=subject))+
   theme_bw()+
   theme(panel.grid=element_blank())
 ```
+
+BRMS version
+```{r}
+
+p1.single.trial.brms.model.formula <- bf(rt ~ peak.time + peak.amplitude + audio + congruence + (peak.time + peak.amplitude + audio + congruence | subject) + (peak.time + peak.amplitude + audio + congruence | stimulus))
+
+get_prior(p1.single.trial.brms.model.formula, data=p1.single.trial.model.data)
+
+p1.single.trial.brms.model.priors <- c(
+  set_prior("normal(0.23,0.10)", coef="peak.time"),
+  set_prior("normal(-0.56,0.22)", coef="peak.amplitude"),
+  set_prior("normal(10.4,1.93)", coef="audiosound"),
+  set_prior("normal(30,1.94)", coef="congruencenonMmatch")
+)
+
+p1.single.trial.brms.model <- brm(
+  formula = p1.single.trial.brms.model.formula,
+  data = p1.single.trial.model.data,
+  prior = p1.single.trial.brms.model.priors,
+  warmup = 1500,
+  iter = 3000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/p1_single_trial_model"
+)
+
+summary(n4.brms.model)
+
+```
+
 
 We find that congruence and cue type are both predictive of response time at the individual trial level. This is unsurprising, as it just confirms our earlier replication of the behavioral result. (These terms are included in the model as covariates more than as factors of interest.) We do not observe any significant relationships beween peak latency and response time, but do observe a marginally-significant relationship between amplitude and response team. This partially replicates Boutonnet & Lupyan's finding that larger P1 peaks were predictive of faster RTs, but does not replicate the finding the earlier peaks were also predictive of faster RTs.
 
