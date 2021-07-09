@@ -650,6 +650,37 @@ This pattern is also consistent with earlier results that showed an interaction 
 
 Boutonnet & Lupyan also report this interaction, but there is some ambiguity about the direction of the effect in their report, so we are unsure if this is a replication or not. We did not observe any of the reported effects related to peak latency predicting congruence.
 
+**brms version**
+
+```{r}
+p1.congruence.brms.model.formula <- bf(
+  is.congruent ~ peak.amplitude*peak.time*audio + (peak.amplitude*peak.time*audio | subject) + (peak.amplitude*peak.time*audio | stimulus), family=bernoulli(link = "logit"))
+
+get_prior(p1.congruence.brms.model.formula, data=p1.congruence.model.data)
+
+p1.congruence.brms.model.priors <- c(
+  set_prior("normal(0,0.2)", class="b"),
+  set_prior("normal(0,0.42)", coef="peak.time")
+)
+
+p1.congruence.brms.model <- brm(
+  formula = p1.congruence.brms.model.formula,
+  data = p1.congruence.model.data,
+  prior = p1.congruence.brms.model.priors,
+  warmup = 1500,
+  iter = 3000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 6,
+  cores = 6,
+  file = "data/brms_fits/p1_congruence_single_trial_model"
+)
+  
+summary(p1.congruence.brms.model)
+
+
+```
+
 # Exploratory Analysis: Single-trial N4
 
 In our subject-level analysis above, we found that the N4 was more negative for sound trials than label trials. Here we explore whether the N4 amplitude is predictive of response times at the single-trial level.
