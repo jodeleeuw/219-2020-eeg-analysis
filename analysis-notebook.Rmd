@@ -151,6 +151,7 @@ Has our belief in the alternative hypothesis been strengthened?
 
 ```{r}
 rt.h1 <- hypothesis(rt.brms.model, "audio_typesound > 0")
+rt.h1
 plot(rt.h1)
 ```
 
@@ -460,8 +461,8 @@ Summarize the P1 model fits
 summary(p1.brms.model)
 ```
 ```{r}
-p1.h1 <- hypothesis(p1.brms.model, "audiosound = 0")
-
+p1.h1 <- hypothesis(p1.brms.model, "audiosound = -.3")
+p1.h1
 plot(p1.h1)
 ```
 
@@ -644,11 +645,20 @@ p1.single.trial.brms.model <- brm(
   file = "data/brms_fits/p1_single_trial_model"
 )
 
-summary(n4.brms.model)
-
+summary(p1.single.trial.brms.model)
 ```
 
+```{r}
+p1.single.trial.h1 <- hypothesis(p1.single.trial.brms.model, "peak.time = 0")
+p1.single.trial.h1
+plot(p1.single.trial.h1)
+```
 
+```{r}
+p1.single.trial.h2 <- hypothesis(p1.single.trial.brms.model, "peak.amplitude = 0")
+p1.single.trial.h2
+plot(p1.single.trial.h2)
+```
 We find that congruence and cue type are both predictive of response time at the individual trial level. This is unsurprising, as it just confirms our earlier replication of the behavioral result. (These terms are included in the model as covariates more than as factors of interest.) We do not observe any significant relationships beween peak latency and response time, but do observe a marginally-significant relationship between amplitude and response team. This partially replicates Boutonnet & Lupyan's finding that larger P1 peaks were predictive of faster RTs, but does not replicate the finding the earlier peaks were also predictive of faster RTs.
 
 The second single-trial level model used by Boutonnet & Lupyan was a model to predict the congruence of a trial based on the interaction of peak amplitude, peak latency, and cue type, with random effects of cue type by subject and item category. Here we had some difficulty fitting the model. We normalized and centered peak amplitude and peak latency as predictors, which aided somewhat in convergence. However, we still find that the model gives warnings about a singular fit. We suspect that this is due to the inclusion of cue type as a random effect at the subject level and item level. Because of the experimental design, half of the label cue trials are congruent and half are incongruent, so cue type cannot predict congruence. We tried fitting an alternative model where peak latency and peak amplitude are random effects, as this makes more sense to us given the structure of the experiment. This model still throws warnings about singular fits, but the parameters are reasonable. All of the models we fit gave roughly the same overall qualitative pattern of results. We think that these results are inconclusive due to model fitting difficulties.
@@ -763,7 +773,17 @@ p1.congruence.brms.model <- brm(
   
 summary(p1.congruence.brms.model)
 
+```
+```{r}
 
+p1.congruence.h1 <- hypothesis(p1.congruence.brms.model, "peak.time:audiosound = 0")
+
+p1.congruence.h1
+plot(p1.congruence.h1)
+```
+
+```{r}
+mcmc_plot(p1.congruence.brms.model, type="trace")
 ```
 
 # Exploratory Analysis: Single-trial N4
