@@ -72,6 +72,14 @@ rt.data <- behavioral.data %>%
 ```
 
 ```{r}
+rt.full.dist.data <- behavioral.data %>%
+  filter(phase=="test", correct==TRUE) %>%
+  group_by(participant_id, match_type, audio_type) %>%
+  summarize(participant.avg.rt = mean(rt)) %>%
+  pivot_wider
+```
+
+```{r}
 behavioral.figure <- ggplot(rt.data, aes(x=match_type, y=M, ymin=M-SE, ymax=M+SE, fill=audio_type))+
   geom_bar(stat="identity", position=position_dodge(width=0.9), orientation="x")+
   geom_errorbar(position=position_dodge(width=0.9), width=0.1) +
@@ -85,6 +93,22 @@ behavioral.figure <- ggplot(rt.data, aes(x=match_type, y=M, ymin=M-SE, ymax=M+SE
 ggsave("figures/figure1-behavioral.png", behavioral.figure, height = 2.5, width=3.75, units="in", dpi=300)
 
 behavioral.figure
+```
+
+
+```{r}
+behavioral.figure.full <- ggplot(rt.full.dist.data, aes(x=match_type, y=participant.avg.rt, color=audio_type))+
+  geom_violin()+
+  labs(x="Congruence", y="Response Time (ms)", fill="Cue Type")+
+  scale_fill_brewer(type="qual", palette = "Set1", labels=c("Label", "Sound"))+
+  scale_x_discrete(labels=c("Match", "Mismatch"))+
+  scale_y_continuous(limits=c(0,1500),expand=c(0,0))+
+  theme_bw(base_size = 11)+
+  theme(panel.grid=element_blank())
+
+#ggsave("figures/figure1-behavioral.png", behavioral.figure, height = 2.5, width=3.75, units="in", dpi=300)
+
+behavioral.figure.full
 ```
 
 Comparing with the original, the relative pattern of results across conditions is very similar. Our response times seem to be longer, with the fastest condition around 600ms instead of the original's <500ms. This could be a consequence of using different experiment software to record response times.
@@ -121,23 +145,40 @@ rt.brms.model.formula <- bf(
 
 get_prior(rt.brms.model.formula,  data = rt.brms.model.data)
 
-rt.brms.model.priors <- c(
+rt.brms.model.priors.BL <- c(
   set_prior("normal(10.4,1.93)", class="b", coef="audio_typesound"),
   set_prior("normal(30,1.94)", class="b", coef="match_typenonMmatch"),
   set_prior("normal(0,10.4)", class="b", coef="audio_typesound:match_typenonMmatch")
 )
 
-rt.brms.model <- brm(
+rt.brms.model.priors.MI <- c(
+  set_prior("normal(0, 60)", class="b")
+)
+
+rt.brms.model.BL <- brm(
   formula = rt.brms.model.formula,
   data = rt.brms.model.data,
-  prior = rt.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = rt.brms.model.priors.BL,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/rt_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/rt_model_BL"
+)
+
+rt.brms.model.MI <- brm(
+  formula = rt.brms.model.formula,
+  data = rt.brms.model.data,
+  prior = rt.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/rt_model_MI"
 )
 ```
 
@@ -150,7 +191,7 @@ summary(rt.brms.model)
 Has our belief in the alternative hypothesis been strengthened?
 
 ```{r}
-rt.h1 <- hypothesis(rt.brms.model, "audio_typesound > 0")
+rt.h1 <- hypothesis(rt.brms.model, "audio_typesound = 0")
 rt.h1
 plot(rt.h1)
 ```
@@ -314,8 +355,8 @@ This shows the same pattern as the P1. Label trials have a higher amplitude only
 
 Here we zoom out on these figures to capture both P1 and P2 in the same figure for inclusion in the manuscript.
 
-```{r fig.height=3, fig.width=3.75}
-p1.p2.interaction.plot <- ggplot(p1.p2.follow.up.interaction.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=audio, fill=audio))+
+```{r fig.height=3.5, fig.width=7}
+p1.p2.interaction.plot.a <- ggplot(p1.p2.follow.up.interaction.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=audio, fill=audio))+
   geom_vline(xintercept = 0, color="grey20")+
   geom_hline(yintercept = 0, color="grey20")+
   geom_ribbon(alpha=0.2, color=NA)+
@@ -330,9 +371,27 @@ p1.p2.interaction.plot <- ggplot(p1.p2.follow.up.interaction.data, aes(x=t, y=M,
   coord_cartesian(xlim=c(-100,300),ylim=c(-2.5,6.5))+
   theme(panel.spacing.x = unit(1.5, "lines"), panel.grid = element_blank())
 
-ggsave("figures/figure5-p1-p2-interaction.png", p1.p2.interaction.plot, height = 3, width=3.75, units="in", dpi=300)
+p1.p2.interaction.plot.b <- ggplot(p1.p2.follow.up.interaction.data, aes(x=t, y=M, ymin=M-SE, ymax=M+SE, color=congruence, fill=congruence))+
+  geom_vline(xintercept = 0, color="grey20")+
+  geom_hline(yintercept = 0, color="grey20")+
+  geom_ribbon(alpha=0.2, color=NA)+
+  geom_line(size=0.75)+
+  facet_grid(audio~.)+
+  facet_grid(audio~., labeller = labeller(audio=c(label="Label", sound="Sound")))+
+  scale_x_continuous(expand=c(0,0))+
+  scale_y_continuous(breaks=c(-2,0,2,4,6))+
+  labs(title=NULL, x="Time since target onset (ms)", y="Amplitude (\U003BCV)", fill="Congruence", color="Congruence")+
+  scale_color_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch") )+
+  scale_fill_brewer(type="qual", palette = "Set2", labels=c("Match", "Mismatch"))+
+  theme_bw(base_size = 9) +
+  coord_cartesian(xlim=c(-100,300),ylim=c(-2.5,6.5))+
+  theme(panel.spacing.x = unit(1.5, "lines"), panel.grid = element_blank())
 
-p1.p2.interaction.plot
+merged.fig.5 <- p1.p2.interaction.plot.a | p1.p2.interaction.plot.b
+
+ggsave("figures/figure5-p1-p2-interaction.png", merged.fig.5, height = 3.5, width=7, units="in", dpi=300)
+
+merged.fig.5
 ```
 
 
@@ -436,23 +495,40 @@ p1.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemi
 
 get_prior(p1.brms.model.formula, data=p1.model.data)
 
-p1.brms.model.priors <- c(
+p1.brms.model.priors.BL <- c(
   set_prior("normal(0, 0.3)", class="b"),
   set_prior("normal(-0.3, 0.127)", coef="audiosound"),
   set_prior("normal(-0.2, 0.22)", coef="hemisphereright:audiosound")
 )
 
-p1.brms.model <- brm(
+p1.brms.model.priors.MI <- c(
+  set_prior("normal(0, 0.3)", class="b")
+)
+
+p1.brms.model.BL <- brm(
   formula = p1.brms.model.formula,
   data = p1.model.data,
-  prior = p1.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = p1.brms.model.priors.BL,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/p1_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_model_BL"
+)
+
+p1.brms.model.MI <- brm(
+  formula = p1.brms.model.formula,
+  data = p1.model.data,
+  prior = p1.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_model_MI"
 )
 ```
 
@@ -460,10 +536,23 @@ Summarize the P1 model fits
 ```{r}
 summary(p1.brms.model)
 ```
+
 ```{r}
-p1.h1 <- hypothesis(p1.brms.model, "audiosound = -.3")
+p1.h1 <- hypothesis(p1.brms.model, "audiosound = 0")
 p1.h1
 plot(p1.h1)
+```
+
+```{r}
+p1.h2 <- hypothesis(p1.brms.model, "congruencenonMmatch = 0")
+p1.h2
+plot(p1.h2)
+```
+
+```{r}
+p1.h3 <- hypothesis(p1.brms.model, "audiosound:congruencenonMmatch = 0")
+p1.h3
+plot(p1.h3)
 ```
 
 
@@ -477,23 +566,40 @@ p2.brms.model.formula <- bf(mean.amplitude ~ hemisphere*audio*congruence + (hemi
 get_prior(p2.brms.model.formula, data=p2.model.data)
 
 
-p2.brms.model.priors <- c(
+p2.brms.model.priors.BL <- c(
   set_prior("normal(0,0.31)", class="b"),
   set_prior("normal(-0.31,0.11)", coef="audiosound"),
   set_prior("normal(0.5,0.11)", coef="congruencenonMmatch")
 )
 
-p2.brms.model <- brm(
+p2.brms.model.priors.MI <- c(
+  set_prior("normal(0,0.5)", class="b")
+)
+
+p2.brms.model.BL <- brm(
   formula = p2.brms.model.formula,
   data = p2.model.data,
-  prior = p2.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = p2.brms.model.priors.BL,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/p2_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p2_model_BL"
+)
+
+p2.brms.model.MI <- brm(
+  formula = p2.brms.model.formula,
+  data = p2.model.data,
+  prior = p2.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p2_model_MI"
 )
 ```
 
@@ -505,11 +611,19 @@ summary(p2.brms.model)
 
 ```{r}
 p2.h1 <- hypothesis(p2.brms.model, "audiosound = 0")
+p2.h1
 plot(p2.h1)
 ```
 ```{r}
-p2.h2 <- hypothesis(p2.brms.model, "congruencenonMmatch = 0")
+p2.h2 <- hypothesis(p2.brms.model, "congruencenonMmatch > 0")
+p2.h2
 plot(p2.h2)
+```
+
+```{r}
+p2.h3 <- hypothesis(p2.brms.model, "audiosound:congruencenonMmatch = 0")
+p2.h3
+plot(p2.h3)
 ```
 
 
@@ -521,23 +635,40 @@ n4.brms.model.formula <- bf(mean.amplitude ~ audio*congruence + (audio*congruenc
 
 get_prior(n4.brms.model.formula, data=n4.model.data)
 
-n4.brms.model.priors <- c(
+n4.brms.model.priors.BL <- c(
   set_prior("normal(0,0.82)", class="b"),
   set_prior("normal(-0.1,0.09)", coef="audiosound"),
   set_prior("normal(-0.82,0.13)", coef="congruencenonMmatch")
 )
 
-n4.brms.model <- brm(
+n4.brms.model.priors.MI <- c(
+  set_prior("normal(0,0.82)", class="b")
+)
+
+n4.brms.model.BL <- brm(
   formula = n4.brms.model.formula,
   data = n4.model.data,
-  prior = n4.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = n4.brms.model.priors.BL,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/n4_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/n4_model_BL"
+)
+
+n4.brms.model.MI <- brm(
+  formula = n4.brms.model.formula,
+  data = n4.model.data,
+  prior = n4.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/n4_model_MI"
 )
 ```
 
@@ -547,7 +678,7 @@ summary(n4.brms.model)
 ```
 
 ```{r}
-n4.h1 <- hypothesis(n4.brms.model, "congruencenonMmatch < 0")
+n4.h1 <- hypothesis(n4.brms.model, "congruencenonMmatch = 0")
 plot(n4.h1)
 ```
 
@@ -555,12 +686,18 @@ plot(n4.h1)
 n4.h1.2 <- hypothesis(n4.brms.model, "congruencenonMmatch = -0.82")
 n4.h1.2
 ```
+
 ```{r}
 n4.h2 <- hypothesis(n4.brms.model, "audiosound = 0")
 plot(n4.h2)
 n4.h2
 ```
 
+```{r}
+n4.h3 <- hypothesis(n4.brms.model, "audiosound:congruencenonMmatch = 0")
+plot(n4.h3)
+n4.h3
+```
 
 # Single-trial EEG analysis
 
@@ -625,24 +762,44 @@ p1.single.trial.brms.model.formula <- bf(rt ~ peak.time + peak.amplitude + audio
 
 get_prior(p1.single.trial.brms.model.formula, data=p1.single.trial.model.data)
 
-p1.single.trial.brms.model.priors <- c(
+p1.single.trial.brms.model.priors.BL <- c(
   set_prior("normal(0.23,0.10)", coef="peak.time"),
   set_prior("normal(-0.56,0.22)", coef="peak.amplitude"),
   set_prior("normal(10.4,1.93)", coef="audiosound"),
   set_prior("normal(30,1.94)", coef="congruencenonMmatch")
 )
 
-p1.single.trial.brms.model <- brm(
+p1.single.trial.brms.model.priors.MI <- c(
+  set_prior("normal(0,0.56)", coef="peak.time"),
+  set_prior("normal(0,0.56)", coef="peak.amplitude"),
+  set_prior("normal(0,30)", coef="audiosound"),
+  set_prior("normal(0,30)", coef="congruencenonMmatch")
+)
+
+p1.single.trial.brms.model.BL <- brm(
   formula = p1.single.trial.brms.model.formula,
   data = p1.single.trial.model.data,
-  prior = p1.single.trial.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = p1.single.trial.brms.model.priors.BL,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/p1_single_trial_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_single_trial_model_BL"
+)
+
+p1.single.trial.brms.model.MI <- brm(
+  formula = p1.single.trial.brms.model.formula,
+  data = p1.single.trial.model.data,
+  prior = p1.single.trial.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_single_trial_model_MI"
 )
 
 summary(p1.single.trial.brms.model)
@@ -745,37 +902,55 @@ p1.congruence.brms.model.formula <- bf(
     (peak.amplitude:peak.time:audio +
     peak.time:audio +
     peak.amplitude:audio +
-    peak.time*peak.amplitude | subject) + (peak.amplitude:peak.time:audio +
+    peak.time*peak.amplitude | subject) + 
+    (peak.amplitude:peak.time:audio +
     peak.time:audio +
     peak.amplitude:audio +
     peak.time*peak.amplitude | stimulus), family=bernoulli(link = "logit"))
 
 get_prior(p1.congruence.brms.model.formula, data=p1.congruence.model.data)
 
-p1.congruence.brms.model.priors <- c(
+p1.congruence.brms.model.priors.BL <- c(
   set_prior("normal(0, 0.42)", class="b"),
   set_prior("normal(0.42, 0.11)", coef="peak.time:audiosound"),
   set_prior("normal(-0.56, 0.25)", coef="peak.amplitude:audiosound")
 )
 
-p1.congruence.brms.model <- brm(
+p1.congruence.brms.model.priors.MI <- c(
+  set_prior("normal(0, 0.56)", class="b")
+)
+
+p1.congruence.brms.model.BL <- brm(
   formula = p1.congruence.brms.model.formula,
   data = p1.congruence.model.data,
-  prior = p1.congruence.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = p1.congruence.brms.model.priors.BL,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/p1_congruence_single_trial_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_congruence_single_trial_model_BL"
+)
+
+p1.congruence.brms.model.MI <- brm(
+  formula = p1.congruence.brms.model.formula,
+  data = p1.congruence.model.data,
+  prior = p1.congruence.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_congruence_single_trial_model_MI"
 )
   
+  
 summary(p1.congruence.brms.model)
-
 ```
-```{r}
 
+```{r}
 p1.congruence.h1 <- hypothesis(p1.congruence.brms.model, "peak.time:audiosound = 0")
 
 p1.congruence.h1
@@ -857,25 +1032,27 @@ summary(n4.single.trial.model)
 
 **BRMS version**
 ```{r}
-n4.single.trial.brms.model.formula <- bf(rt ~ mean.amplitude.z + audio + congruence  + (mean.amplitude.z + audio + congruence | subject) + (mean.amplitude.z + audio + congruence | stimulus))
+n4.single.trial.brms.model.formula <- bf(rt ~ mean.amplitude + audio + congruence  + (mean.amplitude + audio + congruence | subject) + (mean.amplitude + audio + congruence | stimulus))
 
 get_prior(n4.single.trial.brms.model.formula, data=n4.single.trial.model.data)
 
-n4.single.trial.brms.model.priors <- c(
-  set_prior("normal(0,100)", class="b")
+n4.single.trial.brms.model.priors.MI <- c(
+  set_prior("normal(0,30)", coef="audiosound"),
+  set_prior("normal(0,30)", coef="congruencenonMmatch"),
+  set_prior("normal(0,10)", coef="mean.amplitude")
 )
 
-n4.single.trial.brms.model <- brm(
+n4.single.trial.brms.model.MI <- brm(
   formula = n4.single.trial.brms.model.formula,
   data = n4.single.trial.model.data,
-  prior = n4.single.trial.brms.model.priors,
-  warmup = 1500,
-  iter = 3000,
+  prior = n4.single.trial.brms.model.priors.MI,
+  warmup = 1000,
+  iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
-  chains = 6,
-  cores = 6,
-  file = "data/brms_fits/n4_single_trial_model"
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/n4_single_trial_model_MI"
 )
   
 summary(n4.single.trial.brms.model)
