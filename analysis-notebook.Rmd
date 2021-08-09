@@ -182,16 +182,21 @@ rt.brms.model.MI <- brm(
 )
 ```
 
+### Analysis of MI model
+
 With the brms maximal random effects model we can look at the parameter estimates on the population-level parameters:
 
 ```{r}
-summary(rt.brms.model)
+summary(rt.brms.model.MI)
 ```
+
+
+### Analysis of BL model
 
 Has our belief in the alternative hypothesis been strengthened?
 
 ```{r}
-rt.h1 <- hypothesis(rt.brms.model, "audio_typesound = 0")
+rt.h1 <- hypothesis(rt.brms.model.BL, "audio_typesound = 0")
 rt.h1
 plot(rt.h1)
 ```
@@ -210,7 +215,7 @@ eeg.averaged.data <- read_csv('data/eeg/generated/all_averaged.csv') %>%
 eeg.single.trial.data <- read_csv('data/eeg/generated/single_trial_eeg_behavioral.csv')
 ```
 
-#### Segment Counts
+## Data checking
 
 Calculate how many good segments per subject
 
@@ -395,7 +400,7 @@ merged.fig.5
 ```
 
 
-# N4 Waveforms
+## N4 Waveforms
 
 We visualized the N4 waveforms next. We started with the standard averaged waveform.
 
@@ -482,12 +487,13 @@ ggsave("figures/figure2-waveform-grid.png", merged.figure, height = 6, width=8.5
 merged.figure
 ```
 
-# Exploratory analysis of P1/P2/N4 with maximal-random effects and BFs
+## Exploratory analysis of P1/P2/N4 with maximal-random effects and BFs
 
 Here we try a different analysis strategy at the suggestion of a reviewer. We fit a maximal random-effects structure for each of the ERP component models using Bayesian estimation. We set the priors of the population-level parameters based on the reported effects in B&L. For each effect, we set a prior of a normal distribution centered on 0 with standard deviation equal to the reported effect in the paper. This is a conservative way to estimate the degree to which our data strengthens beliefs in the null hypothesis, because the null has the highest prior probability in our model, and the size of the reported effect in B&L controls how dispersed the prior probability is. Stronger effects have more dispersed prior probability, and so are less concentrated at the null of 0. We then use bayes factors to quantify the degree to which our data shifts beliefs in the null hypothesis.
 
-```{r}
+### Run the P1 model
 
+```{r}
 p1.model.data <- eeg.single.trial.data %>%
   filter(component == "P1")
 
@@ -502,7 +508,7 @@ p1.brms.model.priors.BL <- c(
 )
 
 p1.brms.model.priors.MI <- c(
-  set_prior("normal(0, 0.3)", class="b")
+  set_prior("normal(0, 0.6)", class="b")
 )
 
 p1.brms.model.BL <- brm(
@@ -532,25 +538,31 @@ p1.brms.model.MI <- brm(
 )
 ```
 
+### P1 analysis
+
+#### MI priors parameter estimates
+
 Summarize the P1 model fits
 ```{r}
-summary(p1.brms.model)
+summary(p1.brms.model.MI)
 ```
 
+#### Analysis of BFs using the BL priors
+
 ```{r}
-p1.h1 <- hypothesis(p1.brms.model, "audiosound = 0")
+p1.h1 <- hypothesis(p1.brms.model.BL, "audiosound = 0")
 p1.h1
 plot(p1.h1)
 ```
 
 ```{r}
-p1.h2 <- hypothesis(p1.brms.model, "congruencenonMmatch = 0")
+p1.h2 <- hypothesis(p1.brms.model.BL, "congruencenonMmatch = 0")
 p1.h2
 plot(p1.h2)
 ```
 
 ```{r}
-p1.h3 <- hypothesis(p1.brms.model, "audiosound:congruencenonMmatch = 0")
+p1.h3 <- hypothesis(p1.brms.model.BL, "audiosound:congruencenonMmatch = 0")
 p1.h3
 plot(p1.h3)
 ```
@@ -573,7 +585,7 @@ p2.brms.model.priors.BL <- c(
 )
 
 p2.brms.model.priors.MI <- c(
-  set_prior("normal(0,0.5)", class="b")
+  set_prior("normal(0,1)", class="b")
 )
 
 p2.brms.model.BL <- brm(
@@ -642,7 +654,7 @@ n4.brms.model.priors.BL <- c(
 )
 
 n4.brms.model.priors.MI <- c(
-  set_prior("normal(0,0.82)", class="b")
+  set_prior("normal(0,1.64)", class="b")
 )
 
 n4.brms.model.BL <- brm(
@@ -770,10 +782,10 @@ p1.single.trial.brms.model.priors.BL <- c(
 )
 
 p1.single.trial.brms.model.priors.MI <- c(
-  set_prior("normal(0,0.56)", coef="peak.time"),
-  set_prior("normal(0,0.56)", coef="peak.amplitude"),
-  set_prior("normal(0,30)", coef="audiosound"),
-  set_prior("normal(0,30)", coef="congruencenonMmatch")
+  set_prior("normal(0,1.12)", coef="peak.time"),
+  set_prior("normal(0,1.12)", coef="peak.amplitude"),
+  set_prior("normal(0,60)", coef="audiosound"),
+  set_prior("normal(0,60)", coef="congruencenonMmatch")
 )
 
 p1.single.trial.brms.model.BL <- brm(
@@ -917,7 +929,7 @@ p1.congruence.brms.model.priors.BL <- c(
 )
 
 p1.congruence.brms.model.priors.MI <- c(
-  set_prior("normal(0, 0.56)", class="b")
+  set_prior("normal(0, 1.12)", class="b")
 )
 
 p1.congruence.brms.model.BL <- brm(
@@ -1034,8 +1046,8 @@ n4.single.trial.brms.model.formula <- bf(rt ~ mean.amplitude + audio + congruenc
 get_prior(n4.single.trial.brms.model.formula, data=n4.single.trial.model.data)
 
 n4.single.trial.brms.model.priors.MI <- c(
-  set_prior("normal(0,30)", coef="audiosound"),
-  set_prior("normal(0,30)", coef="congruencenonMmatch"),
+  set_prior("normal(0,60)", coef="audiosound"),
+  set_prior("normal(0,60)", coef="congruencenonMmatch"),
   set_prior("normal(0,10)", coef="mean.amplitude")
 )
 
