@@ -813,8 +813,6 @@ p1.single.trial.brms.model.MI <- brm(
   cores = 8,
   file = "data/brms_fits/p1_single_trial_model_MI"
 )
-
-summary(p1.single.trial.brms.model)
 ```
 
 ```{r}
