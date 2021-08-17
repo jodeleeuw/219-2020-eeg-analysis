@@ -5,7 +5,6 @@ library(pracma)
 subjects <- c("01", "02", "03", "05", "06", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20",
               "21", "22", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41") 
 
-subjects <- c("33", "37", "39", "40")
 p1.window <- 35:90
 p2.window <- 170:210
 n4.window <- 170:370
@@ -58,7 +57,7 @@ for(s in subjects){
   print(s)
   load(paste0("data/eeg/generated/subject_",s,".Rdata"))
   
-  p1 <- get(paste0("subject.",s)) %>%
+  p1.group <- get(paste0("subject.",s)) %>%
     filter(t %in% p1.window, electrode %in% occipital) %>%
     mutate(hemisphere = if_else(
       electrode %in% location.left, "left",
@@ -66,10 +65,23 @@ for(s in subjects){
     group_by(subject, congruence, audio, trial, t, hemisphere) %>%
     summarize(merged.voltage = mean(value)) %>%
     group_by(subject, congruence, audio, trial, hemisphere) %>%
-    summarize(mean.amplitude = mean(merged.voltage), peak.time = get.peak.p1(merged.voltage), peak.amplitude = get.peak.amplitude(merged.voltage) ) %>%
+    summarize(mean.amplitude = mean(merged.voltage)) %>%
     mutate(component = "P1")
+  
+  p1.single.trial <- get(paste0("subject.",s)) %>%
+    filter(t %in% p1.window, electrode %in% occipital) %>%
+    mutate(hemisphere = if_else(
+      electrode %in% location.left, "left",
+      if_else(electrode %in% location.right, "right", "central"))) %>%
+    group_by(subject, congruence, audio, trial, t, hemisphere) %>%
+    summarize(merged.voltage = mean(value)) %>%
+    group_by(subject, congruence, audio, trial) %>%
+    summarize(peak.time = get.peak.p1(merged.voltage), peak.amplitude = get.peak.amplitude(merged.voltage) ) %>%
+    mutate(component = "P1")
+  
+  p1 <- p1.group %>% left_join(p1.single.trial, by=c("subject", "congruence", "audio", "trial", "component"))
    
-  p2 <- get(paste0("subject.",s)) %>%
+  p2.group <- get(paste0("subject.",s)) %>%
     filter(t %in% p2.window, electrode %in% occipital) %>%
     mutate(hemisphere = if_else(
       electrode %in% location.left, "left",
@@ -77,8 +89,22 @@ for(s in subjects){
     group_by(subject, congruence, audio, trial, t, hemisphere) %>%
     summarize(merged.voltage = mean(value)) %>%
     group_by(subject, congruence, audio, trial, hemisphere) %>%
-    summarize(mean.amplitude = mean(merged.voltage), peak.time = get.peak.p2(merged.voltage), peak.amplitude = get.peak.amplitude(merged.voltage) ) %>%
+    summarize(mean.amplitude = mean(merged.voltage)) %>%
     mutate(component = "P2")
+  
+  p2.single.trial <- get(paste0("subject.",s)) %>%
+    filter(t %in% p2.window, electrode %in% occipital) %>%
+    mutate(hemisphere = if_else(
+      electrode %in% location.left, "left",
+      if_else(electrode %in% location.right, "right", "central"))) %>%
+    group_by(subject, congruence, audio, trial, t) %>%
+    summarize(merged.voltage = mean(value)) %>%
+    group_by(subject, congruence, audio, trial) %>%
+    summarize(peak.time = get.peak.p2(merged.voltage), peak.amplitude = get.peak.amplitude(merged.voltage) ) %>%
+    mutate(component = "P2")
+  
+  p2 <- p2.group %>% left_join(p2.single.trial, by=c("subject", "congruence", "audio", "trial", "component"))
+  
   
   n4 <- get(paste0("subject.",s)) %>%
     filter(t %in% n4.window, electrode %in% parietal) %>%
@@ -92,10 +118,12 @@ for(s in subjects){
   
   rm(list=paste0("subject.",s,".single"))
   rm(list=paste0("subject.",s))
+  rm(list=c("n4","p1","p1.group","p1.single.trial","p2","p2.group","p2.single.trial"))
 }
 
 subjects <- c("01", "02", "03", "05", "06", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20",
               "21", "22", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41") 
+
 
 for(s in subjects){
   load(paste0("data/eeg/generated/subject_",s,"_single.Rdata"))
