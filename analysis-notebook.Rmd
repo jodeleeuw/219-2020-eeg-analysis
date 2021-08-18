@@ -1151,30 +1151,28 @@ p1.vs.n4.single.trial.model.data <- p1.part %>%
 ```
 
 ```{r}
-p1.n4.single.trial.brms.model.formula <- bf(rt ~ 
+p1.vs.n4.single.trial.brms.model.formula <- bf(rt ~ 
   p1.peak.amplitude.z + p1.peak.time.z + n4.amplitude.z + audio + congruence  + 
   (p1.peak.amplitude.z + p1.peak.time.z + n4.amplitude.z + audio + congruence | subject) + 
   (p1.peak.amplitude.z + p1.peak.time.z + n4.amplitude.z + audio + congruence | stimulus))
 
-get_prior(n4.single.trial.brms.model.formula, data=n4.single.trial.model.data)
-
-p1.n4.single.trial.brms.model.priors.MI <- c(
+p1.vs.n4.single.trial.brms.model.priors.MI <- c(
   set_prior("normal(0,100)", class="b"),
   set_prior("normal(0,60)", coef="audiosound"),
   set_prior("normal(0,60)", coef="congruencenonMmatch")
 )
 
 p1.n4.single.trial.brms.model.MI <- brm(
-  formula = p1.n4.single.trial.brms.model.formula,
-  data = p1.n4.single.trial.model.data,
-  prior = p1.n4.single.trial.brms.model.priors.MI,
+  formula = p1.vs.n4.single.trial.brms.model.formula,
+  data = p1.vs.n4.single.trial.model.data,
+  prior = p1.vs.n4.single.trial.brms.model.priors.MI,
   warmup = 1000,
   iter = 4000,
   save_pars = save_pars(group=FALSE),
   sample_prior = TRUE,
   chains = 8,
   cores = 8,
-  file = "data/brms_fits/p1_n4_single_trial_model_MI"
+  file = "data/brms_fits/p1_vs_n4_single_trial_model_MI"
 )
 ```
 
