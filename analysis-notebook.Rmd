@@ -481,28 +481,11 @@ p1.h1 <- hypothesis(p1.brms.model.BL, "audiosound = 0")
 p1.h1
 ```
 
-```{r}
-plot(p1.h1)
-```
 
 ```{r}
-p1.h2 <- hypothesis(p1.brms.model.BL, "congruencenonMmatch = 0")
+p1.h2 <- hypothesis(p1.brms.model.BL, "hemisphereright:audiosound = 0")
 p1.h2
 ```
-
-```{r}
-plot(p1.h2)
-```
-
-```{r}
-p1.h3 <- hypothesis(p1.brms.model.BL, "audiosound:congruencenonMmatch = 0")
-p1.h3
-```
-
-```{r}
-plot(p1.h3)
-```
-
 
 
 ```{r}
@@ -792,7 +775,7 @@ p1.single.trial.model.data <- eeg.single.trial.data %>%
   # over hemisphere in the pre-processing step. this just removes the duplicate value
   # since the left/right versions are the same.
 
-p1.single.trial.model <- lmer(rt ~ peak.time + peak.amplitude + audio + congruence + (audio + congruence | subject) + (audio + congruence | image_category), data=p1.single.trial.model.data)
+p1.single.trial.model <- lmer(rt ~ peak.time + peak.amplitude + audio + congruence + (audio + congruence | subject) + (audio + congruence | image_category), data=p1.single.trial.model.data, control=lmerControl(optimizer="nloptwrap"))
 
 p1.single.trial.model.simpler.random.effects <- lmer(rt ~ peak.time + peak.amplitude + audio + congruence + (1 + audio + congruence | subject) + (1 | image_category), data=p1.single.trial.model.data)
 ```
@@ -862,6 +845,7 @@ p1.single.trial.brms.model.MI <- brm(
   file = "data/brms_fits/p1_single_trial_model_MI"
 )
 ```
+
 ```{r}
 summary(p1.single.trial.brms.model.MI)
 ```
@@ -871,7 +855,13 @@ summary(p1.single.trial.brms.model.MI)
 summary(p1.single.trial.brms.model.BL)
 ```
 
-We find that congruence and cue type are both predictive of response time at the individual trial level. This is unsurprising, as it just confirms our earlier replication of the behavioral result. (These terms are included in the model as covariates more than as factors of interest.) We do not observe any significant relationships beween peak latency and response time, but do observe a marginally-significant relationship between amplitude and response team. This partially replicates Boutonnet & Lupyan's finding that larger P1 peaks were predictive of faster RTs, but does not replicate the finding the earlier peaks were also predictive of faster RTs.
+```{r}
+hypothesis(p1.single.trial.brms.model.BL, "peak.time=0")
+```
+
+```{r}
+hypothesis(p1.single.trial.brms.model.BL, "peak.amplitude = 0")
+```
 
 ### P1: Is congruence predictable from amplitude, latency, and cue type?
 
@@ -1028,6 +1018,24 @@ p1.congruence.brms.model.MI <- brm(
 )
 ```
 
+```{r}
+summary(p1.congruence.brms.model.MI)
+```
+
+```{r}
+mcmc_plot(p1.congruence.brms.model.MI, pars=c("peak.time", "peak.amplitude"))
+```
+```{r}
+pp_check(p1.congruence.brms.model.MI,x="peak.time")
+```
+
+```{r}
+summary(p1.congruence.brms.model.BL)
+```
+
+```{r}
+hypothesis (p1.congruence.brms.model.BL, "peak.amplitude=0") %>% plot()
+```
 
 ## Exploratory Analysis: Single-trial N4
 
@@ -1176,21 +1184,34 @@ p1.n4.single.trial.brms.model.MI <- brm(
 )
 ```
 
+```{r}
+summary(p1.n4.single.trial.brms.model.MI)
+```
 
 
+```{r}
+p1.exploratory.latency.model.data <- eeg.single.trial.data %>%
+  filter(component == "P1") %>% filter(hemisphere == 'left')
 
+p1.exploratory.latency.model.formula <- bf(peak.time ~ audio * congruence + (audio * congruence | subject) + (audio * congruence | stimulus))
 
+p1.exploratory.latency.model.priors.MI <- c(
+  set_prior("normal(0,20)", class="b")
+)
 
-
-
-
-
-
-
-
-
-
-
+p1.exploratory.latency.brms.model.MI <- brm(
+  formula = p1.exploratory.latency.model.formula,
+  data = p1.exploratory.latency.model.data,
+  prior = p1.exploratory.latency.model.priors.MI,
+  warmup = 100,
+  iter = 120,
+  save_pars = save_pars(group=FALSE),
+  sample_prior = TRUE,
+  chains = 8,
+  cores = 8,
+  file = "data/brms_fits/p1_latency_model_MI"
+)
+```
 
 
 
