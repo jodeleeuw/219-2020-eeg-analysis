@@ -73,7 +73,7 @@ for(s in subjects){
     mutate(hemisphere = if_else(
       electrode %in% location.left, "left",
       if_else(electrode %in% location.right, "right", "central"))) %>%
-    group_by(subject, congruence, audio, trial, t, hemisphere) %>%
+    group_by(subject, congruence, audio, trial, t) %>%
     summarize(merged.voltage = mean(value)) %>%
     group_by(subject, congruence, audio, trial) %>%
     summarize(peak.time = get.peak.p1(merged.voltage), peak.amplitude = get.peak.amplitude(merged.voltage) ) %>%

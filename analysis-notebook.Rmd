@@ -12,13 +12,8 @@ library(lmerTest)
 library(tidyr)
 library(patchwork)
 library(brms)
-```
+source('util-lmer-cached.R')
 
-```{r}
-set.seed(12604)
-```
-
-```{r}
 options(dplyr.summarise.inform = FALSE)
 ```
 
@@ -125,8 +120,10 @@ rt.model.data <- behavioral.data %>%
   select(participant_id, audio_type, match_type, rt) %>%
   mutate(audio_type = factor(audio_type), match_type = factor(match_type))
 
-rt.model <- lmer(rt ~ audio_type*match_type + (audio_type + match_type|participant_id), data=rt.model.data,
-                 control=lmerControl(optimizer = "bobyqa"))
+rt.model <- lmer.cached("data/lmer_fits/rt_model",
+                        rt ~ audio_type*match_type + (audio_type + match_type|participant_id), 
+                        data=rt.model.data,
+                        control=lmerControl(optimizer = "bobyqa"))
 
 summary(rt.model)
 ```
@@ -306,7 +303,9 @@ Following Boutonnet & Lupyan, we look for differences in mean amplitude of the P
 p1.model.data <- eeg.single.trial.data %>%
   filter(component == "P1")
 
-p1.model <- lmer(mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p1.model.data, control=lmerControl(optimizer="bobyqa"))
+p1.model <- lmer.cached(
+  "data/lmer_fits/p1_amplitude_model",
+  mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p1.model.data, control=lmerControl(optimizer="bobyqa"))
 
 summary(p1.model)
 ```
@@ -347,9 +346,22 @@ We next ran the same linear mixed effects model on the data from the P2 time win
 p2.model.data <- eeg.single.trial.data %>%
   filter(component == "P2")
 
-p2.model <- lmer(peak.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), data=p2.model.data, control=lmerControl(optimizer="bobyqa"))
+p2.model <- lmer.cached(
+  "data/lmer_fits/p2_amplitude_model",
+  peak.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), 
+  data=p2.model.data
+)
 
 summary(p2.model)
+```
+```{r}
+p2.model.simpler <- lmer.cached(
+  "data/lmer_fits/p2_amplitude_model_simplified",
+  peak.amplitude ~ hemisphere*audio*congruence + (audio + congruence|subject), 
+  data=p2.model.data
+)
+
+summary(p2.model.simpler)
 ```
 
 Here we find similar results to the P1. There is a marginally significant (*p* = 0.048) main effect of cue type, but it is in the opposite direction as the main effect found by Boutonnet & Lupyan, with sound trials producing slightly larger amplitudes than label trials. We find that mismatch trials have a higher amplitude than match trials, replicating Boutonnet & Lupyan. Like with the P1, we also find an interaction between cue type and congruence. We visualize this below.
@@ -635,8 +647,11 @@ We analyzed the N4 using a similar model as with the P1 & P2, except that the he
 n4.model.data <- eeg.single.trial.data %>%
   filter(component == "N4")
 
-n4.model <- lmer(mean.amplitude ~ audio*congruence + (audio + congruence | subject), data=n4.model.data,
-                 control=lmerControl(optimizer = "nloptwrap"))
+n4.model <- lmer.cached(
+  "data/lmer_fits/n4_amplitude_model",
+  mean.amplitude ~ audio*congruence + (audio + congruence | subject), 
+  data=n4.model.data,
+  control=lmerControl(optimizer = "nloptwrap"))
 
 summary(n4.model)
 ```
@@ -775,9 +790,16 @@ p1.single.trial.model.data <- eeg.single.trial.data %>%
   # over hemisphere in the pre-processing step. this just removes the duplicate value
   # since the left/right versions are the same.
 
-p1.single.trial.model <- lmer(rt ~ peak.time + peak.amplitude + audio + congruence + (audio + congruence | subject) + (audio + congruence | image_category), data=p1.single.trial.model.data, control=lmerControl(optimizer="nloptwrap"))
+p1.single.trial.model <- lmer.cached(
+  "data/lmer_fits/p1_single_trial_model",
+  rt ~ peak.time + peak.amplitude + audio + congruence + (audio + congruence | subject) + (audio + congruence | image_category),
+  data=p1.single.trial.model.data)
 
-p1.single.trial.model.simpler.random.effects <- lmer(rt ~ peak.time + peak.amplitude + audio + congruence + (1 + audio + congruence | subject) + (1 | image_category), data=p1.single.trial.model.data)
+p1.single.trial.model.simpler.random.effects <- lmer.cached(
+  "data/lmer_fits/p1_single_trial_model_simpler",
+  rt ~ peak.time + peak.amplitude + audio + congruence + (1 + audio + congruence | subject) + (1 | image_category), 
+  data=p1.single.trial.model.data,
+  control=lmerControl(optimizer="bobyqa"))
 ```
 
 ```{r}
@@ -879,8 +901,13 @@ p1.congruence.model.data <- eeg.single.trial.data %>%
 **Model 1:** original Boutonnet & Lupyan approach
 
 ```{r}
-p1.congruence.model.v1 <- glmer(
-  is.congruent ~ peak.amplitude*peak.time*audio + (audio | subject) + (audio | image_category), p1.congruence.model.data, family="binomial", control=glmerControl(optimizer = "bobyqa"))
+p1.congruence.model.v1 <- glmer.cached(
+  "data/lmer_fits/p1_congruence_model_v1",
+  is.congruent ~ peak.amplitude*peak.time*audio + (audio | subject) + (audio | image_category), 
+  p1.congruence.model.data, 
+  family="binomial", 
+  control=glmerControl(optimizer = "bobyqa")
+)
 
 summary(p1.congruence.model.v1)
 ```
@@ -888,7 +915,8 @@ summary(p1.congruence.model.v1)
 **Model 2:** normalized amplitude and latency
 
 ```{r}
-p1.congruence.model.v2 <- glmer(
+p1.congruence.model.v2 <- glmer.cached(
+  "data/lmer_fits/p1_congruence_model_v2",
   is.congruent ~ peak.amplitude.z*peak.time.z*audio + (audio | subject) + (audio | image_category), p1.congruence.model.data, family="binomial", control=glmerControl(optimizer = "bobyqa"))
 
 summary(p1.congruence.model.v2)
@@ -897,7 +925,8 @@ summary(p1.congruence.model.v2)
 **Model 3:** normalized amplitude and latency, random effects of amplitude and latency by subject, no random effect by cue type (audio)
 
 ```{r}
-p1.congruence.model.v3 <- glmer(
+p1.congruence.model.v3 <- glmer.cached(
+  "data/lmer_fits/p1_congruence_model_v3",
   is.congruent ~ peak.amplitude.z*peak.time.z*audio + (peak.amplitude.z + peak.time.z | subject), p1.congruence.model.data, family="binomial", control=glmerControl(optimizer = "bobyqa"))
 
 summary(p1.congruence.model.v3)
@@ -906,7 +935,8 @@ summary(p1.congruence.model.v3)
 **Model 4:** normalized amplitude and latency, random effects of amplitude and latency by subject, no random effect by cue type (audio), no random intercept by subject
 
 ```{r}
-p1.congruence.model.v4 <- glmer(
+p1.congruence.model.v4 <- glmer.cached(
+  "data/lmer_fits/p1_congruence_model_v4",
   is.congruent ~ peak.amplitude.z*peak.time.z*audio + (0 + peak.amplitude.z + peak.time.z | subject), p1.congruence.model.data, family="binomial", control=glmerControl(optimizer = "bobyqa"))
 
 summary(p1.congruence.model.v4)
@@ -916,7 +946,8 @@ summary(p1.congruence.model.v4)
 audio type should not predict congruence.
 
 ```{r}
-p1.congruence.model.v5 <- glmer(
+p1.congruence.model.v5 <- glmer.cached(
+  "data/lmer_fits/p1_congruence_model_v5",
   is.congruent ~
     peak.amplitude.z +
     peak.time.z +
@@ -929,7 +960,7 @@ p1.congruence.model.v5 <- glmer(
     peak.amplitude.z:peak.time.z +
     peak.amplitude.z:audio +
     peak.time.z:audio +
-    peak.amplitude.z:peak.time.z:audio | subject), p1.congruence.model.data, family="binomial")
+    peak.amplitude.z:peak.time.z:audio | subject), p1.congruence.model.data, family="binomial", control=glmerControl(optimizer = "bobyqa"))
 
 summary(p1.congruence.model.v5)
 ```
@@ -1019,7 +1050,7 @@ p1.congruence.brms.model.MI <- brm(
 ```
 
 ```{r}
-summary(p1.congruence.brms.model.MI)
+print(summary(p1.congruence.brms.model.MI), digits=4)
 ```
 
 ```{r}
@@ -1030,11 +1061,15 @@ pp_check(p1.congruence.brms.model.MI,x="peak.time")
 ```
 
 ```{r}
-summary(p1.congruence.brms.model.BL)
+print(summary(p1.congruence.brms.model.BL), digits=4)
 ```
 
 ```{r}
-hypothesis (p1.congruence.brms.model.BL, "peak.amplitude=0") %>% plot()
+hypothesis (p1.congruence.brms.model.BL, "peak.time:audiosound=0")
+```
+
+```{r}
+hypothesis (p1.congruence.brms.model.BL, "peak.amplitude:audiosound=0")
 ```
 
 ## Exploratory Analysis: Single-trial N4
@@ -1053,7 +1088,10 @@ This is the model that we started with based on *a priori* ideas about how to ex
 
 
 ```{r}
-n4.single.trial.model <- lmer(rt ~ mean.amplitude.z + audio + congruence  + (mean.amplitude.z + audio + congruence | subject), data=n4.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
+n4.single.trial.model <- lmer.cached(
+  "data/lmer_fits/n4_single_trial_model_v1",
+  rt ~ mean.amplitude.z + audio + congruence  + (mean.amplitude.z + audio + congruence | subject), 
+  data=n4.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
 
 summary(n4.single.trial.model)
 ```
@@ -1075,17 +1113,22 @@ is consistently found regardless of model assumptions.
 **Model 2** Variant without centering and normalizing amplitude:
 
 ```{r}
-n4.single.trial.model <- lmer(rt ~ mean.amplitude + audio + congruence + (mean.amplitude + audio + congruence | subject), data=n4.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
+n4.single.trial.model.v2 <- lmer.cached(
+  "data/lmer_fits/n4_single_trial_model_v2",
+  rt ~ mean.amplitude + audio + congruence + (mean.amplitude + audio + congruence | subject), data=n4.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
 
-summary(n4.single.trial.model)
+summary(n4.single.trial.model.v2)
 ```
 
 **Model 3** Variant without cue type and congruence as effects.
 
 ```{r}
-n4.single.trial.model <- lmer(rt ~ mean.amplitude.z + (mean.amplitude.z | subject), data=n4.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
+n4.single.trial.model.v3 <- lmer.cached(
+  "data/lmer_fits/n4_single_trial_model_v3",
+  rt ~ mean.amplitude.z + (mean.amplitude.z | subject), 
+  data=n4.single.trial.model.data, control=lmerControl(optimizer = "bobyqa"))
 
-summary(n4.single.trial.model)
+summary(n4.single.trial.model.v3)
 ```
 
 **Model 4** Variant where we aggressively remove long RTs and outlier amplitudes.
@@ -1101,9 +1144,11 @@ n4.single.trial.model.data.filtered <- n4.single.trial.model.data %>%
   filter(abs(mean.amplitude.z) <= 3) %>%
   filter(rt > 250 & rt < 1500)
 
-n4.single.trial.model <- lmer(rt ~ mean.amplitude.z + audio + congruence + (mean.amplitude.z + audio + congruence | subject), data=n4.single.trial.model.data.filtered, control=lmerControl(optimizer = "bobyqa"))
+n4.single.trial.model.v4 <- lmer.cached(
+  "data/lmer_fits/n4_single_trial_model_v4",
+  rt ~ mean.amplitude.z + audio + congruence + (mean.amplitude.z + audio + congruence | subject), data=n4.single.trial.model.data.filtered, control=lmerControl(optimizer = "bobyqa"))
 
-summary(n4.single.trial.model)
+summary(n4.single.trial.model.v4)
 ```
 
 **BRMS version**
@@ -1213,7 +1258,9 @@ p1.exploratory.latency.brms.model.MI <- brm(
 )
 ```
 
-
+```{r}
+summary(p1.exploratory.latency.brms.model.MI)
+```
 
 
 
