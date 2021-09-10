@@ -348,20 +348,12 @@ p2.model.data <- eeg.single.trial.data %>%
 
 p2.model <- lmer.cached(
   "data/lmer_fits/p2_amplitude_model",
-  peak.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), 
-  data=p2.model.data
+  mean.amplitude ~ hemisphere*audio*congruence + (hemisphere + audio + congruence|subject), 
+  data=p2.model.data, 
+  control=lmerControl(optimizer="bobyqa")
 )
 
 summary(p2.model)
-```
-```{r}
-p2.model.simpler <- lmer.cached(
-  "data/lmer_fits/p2_amplitude_model_simplified",
-  peak.amplitude ~ hemisphere*audio*congruence + (audio + congruence|subject), 
-  data=p2.model.data
-)
-
-summary(p2.model.simpler)
 ```
 
 Here we find similar results to the P1. There is a marginally significant (*p* = 0.048) main effect of cue type, but it is in the opposite direction as the main effect found by Boutonnet & Lupyan, with sound trials producing slightly larger amplitudes than label trials. We find that mismatch trials have a higher amplitude than match trials, replicating Boutonnet & Lupyan. Like with the P1, we also find an interaction between cue type and congruence. We visualize this below.
@@ -456,7 +448,8 @@ p1.brms.model.BL <- brm(
   sample_prior = TRUE,
   chains = 8,
   cores = 8,
-  file = "data/brms_fits/p1_model_BL"
+  file = "data/brms_fits/p1_model_BL",
+  control = list(adapt_delta = 0.99)
 )
 
 p1.brms.model.MI <- brm(
@@ -469,7 +462,8 @@ p1.brms.model.MI <- brm(
   sample_prior = TRUE,
   chains = 8,
   cores = 8,
-  file = "data/brms_fits/p1_model_MI"
+  file = "data/brms_fits/p1_model_MI",
+  control = list(adapt_delta = 0.99)
 )
 ```
 
