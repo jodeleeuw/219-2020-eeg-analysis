@@ -845,7 +845,8 @@ p1.single.trial.brms.model.BL <- brm(
   sample_prior = TRUE,
   chains = 8,
   cores = 8,
-  file = "data/brms_fits/p1_single_trial_model_BL"
+  file = "data/brms_fits/p1_single_trial_model_BL",
+  control=list(adapt_delta=0.99)
 )
 
 p1.single.trial.brms.model.MI <- brm(
@@ -858,7 +859,8 @@ p1.single.trial.brms.model.MI <- brm(
   sample_prior = TRUE,
   chains = 8,
   cores = 8,
-  file = "data/brms_fits/p1_single_trial_model_MI"
+  file = "data/brms_fits/p1_single_trial_model_MI",
+  control=list(adapt_delta=0.99)
 )
 ```
 
